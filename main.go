@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"flag"
 
@@ -95,6 +97,21 @@ func main() {
 		log.Println("No .env file found, all config coming from system env")
 	}
 
+	// parse commandline arguments
+	// -----
+	shouldMigrateDbPtr := flag.Bool("m", false, "migrate the db schema")
+	shouldLoadDbPtr := flag.Bool("l", false, "load books from bookdir into the db")
+
+	// queryPtr := flag.String("q", "", "search for this")
+	pagePtr := flag.Int("p", 0, "page")
+	pageSize, err := strconv.Atoi(os.Getenv("PLOOGLE_PAGE_SIZE"))
+
+	fmt.Println(pageSize, err)
+	flag.Parse()
+	// -----
+
+	// db setup
+	// ------
 	databaseUser := os.Getenv("POSTGRES_USER")
 	databasePassword := os.Getenv("POSTGRES_PASSWORD")
 	databaseHost := os.Getenv("POSTGRES_HOST")
@@ -120,41 +137,37 @@ func main() {
 	}
 	defer dbpool.Close()
 
-	// var greeting string
-	// err = dbpool.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
-	// if err != nil {
-	// 	log.Fatalf("QueryRow failed: %v\n", err)
-	// }
+	// prepare prepared statements
+	// clean out any leftovers, probably not needed
+	//dbpool.Exec(context.Background(), "deallocate all;")
 
-	// fmt.Println(greeting)
+	// load search related statments
+	//initSearchStatements(dbpool)
+	// -----
 
-	shouldMigrateDbPtr := flag.Bool("m", false, "migrate the db schema")
-	shouldLoadDbPtr := flag.Bool("l", false, "load books from bookdir into the db")
-
-	queryPtr := flag.String("q", "", "search for this")
-	flag.Parse()
-
+	// apply database schema
 	if *shouldMigrateDbPtr {
 		migrate(dbpool)
 	}
-	// database setup completed!
 
+	// reload books from disk
 	if *shouldLoadDbPtr {
 		fillDB(dbpool)
 	}
-	//fillDB(dbpool)
-
-	// err = insertOrUpdateBook("../books/Human Domestication Guide-ao3_45190954.epub", dbpool)
-	// if err != nil {
-	// 	log.Fatalf("insert failed: %v\n", err)
-	// }
 
 	var query Query
 
-	query.query = *queryPtr
+	query.query = "\"affini\""
+	query.limit = pageSize
+	query.offset = *pagePtr * pageSize
 
 	res, err := search(query, dbpool)
 
-	fmt.Println(res, err)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	resJson, err := json.Marshal(res)
+
+	fmt.Println(string(resJson), err)
 
 }
