@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -45,29 +45,13 @@ func search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	queryPerformance.startTime = int64(time.Now().Nanosecond())
 
 	rows, _ := dbpool.Query(context.Background(),
-		"select url from chapters")
+		"select id, chapter, chapter_title, url, book_id, created_at from chapters")
 
-	// chapterResults, err := pgx.CollectRows(rows, pgx.RowToStructByName[Chapter])
+	var err error
+	result.hits, err = pgx.CollectRows(rows, pgx.RowToStructByPos[Chapter])
 
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// for _, chapterResult := range chapterResults {
-	// 	fmt.Println(chapterResult)
-	// }
-
-	for rows.Next() {
-		// var chapterResult Chapter
-		var url string
-
-		err := rows.Scan(&url)
-		fmt.Println(url)
-		// result.hits = append(result.hits, chapterResult)
-		// fmt.Println(chapterResult)
-		if err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
 	}
 
 	queryPerformance.endTime = int64(time.Now().Nanosecond())

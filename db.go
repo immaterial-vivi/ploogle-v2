@@ -10,40 +10,40 @@ import (
 )
 
 type EBookData struct {
-	url      string
-	title    string
-	author   string
-	summary  string
-	chapters []epub.Chapter
+	Url      string
+	Title    string
+	Author   string
+	Summary  string
+	Chapters []epub.Chapter
 }
 
 type Book struct {
-	id        int       `db:"id"`
-	url       string    `db:"url"`
-	title     string    `db:"title"`
-	author    string    `db:"author"`
-	summary   string    `db:"summary"`
-	createdAt time.Time `db:"created_at"`
+	Id        int       `db:"id"`
+	Url       string    `db:"url"`
+	Title     string    `db:"title"`
+	Author    string    `db:"author"`
+	Summary   string    `db:"summary"`
+	CreatedAt time.Time `db:"created_at"`
 
 	// author's notes are stored as chapter 0
 }
 
 type Chapter struct {
-	id            int    `db:"id"`
-	chapterNumber int    `db:"chapter"`
-	title         string `db:"chapter_title"`
-	chapterUrl    string `db:"url"`
-	bookId        int    `db:"book_id"`
+	Id            int    `db:"id"`
+	ChapterNumber int    `db:"chapter"`
+	Title         string `db:"chapter_title"`
+	ChapterUrl    string `db:"url"`
+	BookId        int    `db:"book_id"`
 	// text         string    `db:"chapter_text"`
-	createdAt time.Time `db:"created_at"`
+	CreatedAt time.Time `db:"created_at"`
 	//the chapter notes are stored in the text directly
 }
 
 type BlacklistEntry struct {
-	id        int       `db:"id"`
-	bookId    int       `db:"book_id"`
-	reason    string    `db:"reason"`
-	createdAt time.Time `db:"created_at"`
+	Id        int       `db:"id"`
+	BookId    int       `db:"book_id"`
+	Reason    string    `db:"reason"`
+	CreatedAt time.Time `db:"created_at"`
 }
 
 // we only ever update a whole book at once because we fetch entire ebooks through fanficfare
@@ -52,17 +52,17 @@ func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {
 
 	_, err := dbpool.Exec(context.Background(),
 		"insert into books(title, author, url, summary) values ($1, $2, $3, $4) on conflict (url) do update set title=$1, author=$2, summary=$4",
-		book.title, book.author, book.url, book.summary)
+		book.Title, book.Author, book.Url, book.Summary)
 
 	var bookId int
-	err = dbpool.QueryRow(context.Background(), "select id from books where url like $1", book.url).Scan(&bookId)
+	err = dbpool.QueryRow(context.Background(), "select id from books where url like $1", book.Url).Scan(&bookId)
 
-	for index, chapter := range book.chapters {
+	for index, chapter := range book.Chapters {
 		text := chapter.Text()
 		title := chapter.Title
 		chapter_url := chapter.Url
 		if chapter_url == "" {
-			chapter_url = book.url
+			chapter_url = book.Url
 		}
 
 		_, err = dbpool.Exec(context.Background(),

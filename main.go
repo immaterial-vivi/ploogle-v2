@@ -33,37 +33,6 @@ func migrate(dbpool *pgxpool.Pool) {
 	}
 
 	log.Print("Done! \n")
-
-}
-
-func readBooks() {
-	book, err := epub.ReadBook("../books/Human Domestication Guide-ao3_45190954.epub")
-	if err != nil {
-		log.Println("could not read book:", err)
-	}
-
-	// Dublin Core metadata helpers
-	if title, err := book.Title(); err == nil {
-		fmt.Println("Title:", title)
-	}
-
-	// Generic metadata access
-	values, err := book.MetadataByKey("language")
-
-	fmt.Println("language:", values)
-
-	// Iterate over the full metadata map (includes <meta> extensions)
-	metadata := book.AllMetadata()
-	fmt.Println("metadata:", metadata)
-
-	// Work with chapters
-	fmt.Println("Total chapters:", book.ChapterCount())
-	//firstChapter, _ := book.ChapterByIndex(0)
-	//fmt.Println(firstChapter.Text())
-
-	// Concatenate the whole book into a single text blob
-	//fmt.Println(book.AllChaptersText())
-
 }
 
 func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
@@ -91,12 +60,12 @@ func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
 	}
 
 	var ebookData EBookData
-	ebookData.author = author
-	ebookData.title = title
-	ebookData.url = bookUrl
-	ebookData.summary = summary
+	ebookData.Author = author
+	ebookData.Title = title
+	ebookData.Url = bookUrl
+	ebookData.Summary = summary
 
-	ebookData.chapters = book.Chapters
+	ebookData.Chapters = book.Chapters
 
 	upsertBook(ebookData, dbpool)
 	return err
@@ -188,26 +157,4 @@ func main() {
 
 	fmt.Println(res, err)
 
-}
-
-func _search(queryPtr *string, dbpool *pgxpool.Pool) error {
-
-	log.Println("searching for query:", *queryPtr)
-	rows, _ := dbpool.Query(context.Background(), "select title, author, url from books where title like $1", *queryPtr)
-
-	for rows.Next() {
-		var title string
-		var author string
-		var url string
-		err := rows.Scan(&title, &author, &url)
-		if err != nil {
-			return err
-		}
-		result := fmt.Sprintf("%s by %s, at %s", title, author, url)
-		log.Println(result)
-	}
-
-	return rows.Err()
-
-	// panic("unimplemented")
 }
