@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"flag"
 
@@ -66,9 +67,19 @@ func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
 	ebookData.Title = title
 	ebookData.Url = bookUrl
 	ebookData.Summary = summary
-
 	ebookData.Chapters = book.Chapters
 
+	// get the dates
+	publishedAtDate, err := time.Parse(time.DateOnly, metadata["date"][0])
+	ebookData.PublishedAt = publishedAtDate
+	packagedAtDate, err := time.Parse(time.DateOnly, metadata["date"][1])
+	ebookData.PackagedAt = packagedAtDate
+	updatedAtDate, err := time.Parse(time.DateOnly, metadata["date"][2])
+	ebookData.UpdatedAt = updatedAtDate
+	if err != nil {
+		log.Println(err)
+	}
+	// log.Println(ebookData)
 	upsertBook(ebookData, dbpool)
 	return err
 
@@ -136,14 +147,12 @@ func main() {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 	defer dbpool.Close()
-
-	// prepare prepared statements
-	// clean out any leftovers, probably not needed
-	//dbpool.Exec(context.Background(), "deallocate all;")
-
-	// load search related statments
-	//initSearchStatements(dbpool)
 	// -----
+
+	fetchBooks(dbpool)
+	//fetchBook("/works/66691849/chapters/172065550")
+	//findPdfDest(test)
+	return
 
 	// apply database schema
 	if *shouldMigrateDbPtr {
@@ -151,7 +160,7 @@ func main() {
 	}
 
 	// reload books from disk
-	if *shouldLoadDbPtr {
+	if *shouldLoadDbPtr || true {
 		fillDB(dbpool)
 	}
 

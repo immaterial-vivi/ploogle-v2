@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -39,23 +38,6 @@ type Query struct {
 	query  string
 	limit  int
 	offset int
-}
-
-// statement_s_ is a lie but i'm working on it :p
-//
-// statements prepared:
-// - ploogle_websearch_query
-func initSearchStatements(dbpool *pgxpool.Pool) error {
-
-	b, err := os.ReadFile("./searchquery.sql")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	searchquery := string(b)
-
-	_, err = dbpool.Exec(context.Background(), searchquery)
-	return err
 }
 
 func search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {

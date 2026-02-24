@@ -10,11 +10,14 @@ import (
 )
 
 type EBookData struct {
-	Url      string
-	Title    string
-	Author   string
-	Summary  string
-	Chapters []epub.Chapter
+	Url         string
+	Title       string
+	Author      string
+	Summary     string
+	Chapters    []epub.Chapter
+	PublishedAt time.Time
+	UpdatedAt   time.Time
+	PackagedAt  time.Time
 }
 
 type Book struct {
@@ -51,11 +54,19 @@ type BlacklistEntry struct {
 func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {
 
 	_, err := dbpool.Exec(context.Background(),
-		"insert into books(title, author, url, summary) values ($1, $2, $3, $4) on conflict (url) do update set title=$1, author=$2, summary=$4",
-		book.Title, book.Author, book.Url, book.Summary)
+		"insert into books(title, author, url, summary, published_at, updated_at, packaged_at) values ($1, $2, $3, $4, $5, $6, $7) on conflict (url) do update set title=$1, author=$2, summary=$4, updated_at=$6, packaged_at=$7",
+		book.Title, book.Author, book.Url, book.Summary, book.PublishedAt, book.UpdatedAt, book.PackagedAt)
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	var bookId int
 	err = dbpool.QueryRow(context.Background(), "select id from books where url like $1", book.Url).Scan(&bookId)
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	for index, chapter := range book.Chapters {
 		text := chapter.Text()
