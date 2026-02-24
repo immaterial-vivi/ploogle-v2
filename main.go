@@ -102,7 +102,7 @@ func main() {
 	shouldMigrateDbPtr := flag.Bool("m", false, "migrate the db schema")
 	shouldLoadDbPtr := flag.Bool("l", false, "load books from bookdir into the db")
 
-	// queryPtr := flag.String("q", "", "search for this")
+	queryPtr := flag.String("q", "", "search for this")
 	pagePtr := flag.Int("p", 0, "page")
 	pageSize, err := strconv.Atoi(os.Getenv("PLOOGLE_PAGE_SIZE"))
 
@@ -157,7 +157,7 @@ func main() {
 
 	var query Query
 
-	query.query = "\"affini\""
+	query.query = *queryPtr
 	query.limit = pageSize
 	query.offset = *pagePtr * pageSize
 
