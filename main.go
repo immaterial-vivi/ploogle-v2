@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -95,5 +96,16 @@ func main() {
 
 		fmt.Println(string(resJson), err)
 	}
+
+	mux := http.NewServeMux()
+
+	cronUi, err := queueJobs(dbpool)
+	ploogle, err := ploogleV2Api(dbpool, pageSize)
+
+	mux.Handle("/api/v2/", http.StripPrefix("/api/v2", ploogle))
+	mux.Handle("/cron/", http.StripPrefix("/cron", cronUi))
+
+	log.Println("Server starting on :9005!")
+	log.Fatal(http.ListenAndServe(":9005", RequestLog(mux)))
 
 }
