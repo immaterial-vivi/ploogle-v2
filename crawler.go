@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"os/exec"
@@ -13,6 +14,39 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type BookMeta struct {
+	url        string
+	lastUpdate time.Time
+}
+
+func parsePage(reader io.ReadCloser) ([]BookMeta, error) {
+
+	doc, err := goquery.NewDocumentFromReader(reader)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var links []BookMeta
+
+	doc.Find("ol > li > div > .datetime").Each(func(i int, s *goquery.Selection) {
+		ao3DateLayout := "02 Jan 2006"
+		date, err := time.Parse(ao3DateLayout, s.Text())
+
+		if err != nil {
+			log.Println(err)
+
+			return
+		}
+		link, _ := s.Parent().Find("h4").Find("a").Attr("href")
+		log.Println(date, link)
+		links = append(links, BookMeta{link, date})
+	})
+
+	return links, err
+
+}
 
 func fetchBooks(dbpool *pgxpool.Pool) error {
 

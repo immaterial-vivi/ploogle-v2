@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"flag"
@@ -149,7 +151,10 @@ func main() {
 	defer dbpool.Close()
 	// -----
 
-	fetchBooks(dbpool)
+	reader, _ := os.ReadFile("../test.html")
+
+	parsePage(io.NopCloser(strings.NewReader(string(reader))))
+	//fetchBooks(dbpool)
 	//fetchBook("/works/66691849/chapters/172065550")
 	//findPdfDest(test)
 	return
