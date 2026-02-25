@@ -139,6 +139,13 @@ func fillDB(dbpool *pgxpool.Pool) {
 
 }
 
+func GetRandomBookUrl(dbpool *pgxpool.Pool) (string, error) {
+	var url string
+
+	err := dbpool.QueryRow(context.Background(), "select url from books where url like $1 order by rand() limit 1").Scan(&url)
+	return url, err
+}
+
 // we only ever update a whole book at once because we fetch entire ebooks through fanficfare
 // this is overfetching, but ao3 doesn't have an api and the alternative is web scraping. This feels more stable
 func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {

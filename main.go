@@ -87,7 +87,7 @@ func main() {
 		query.limit = pageSize
 		query.offset = *pagePtr * pageSize
 
-		res, err := search(query, dbpool)
+		res, err := Search(query, dbpool)
 
 		if err != nil {
 			log.Fatalln(err)

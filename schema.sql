@@ -21,9 +21,20 @@ create table if not exists chapters (
     chapter_text text not null,
     created_at date default now(),
     textsearchable_index_col tsvector generated always as (
-        to_tsvector(
-            'english'::regconfig,
-            ((chapter_title || ' '::text) || chapter_text)
+        (
+            setweight(
+                to_tsvector(
+                    'english'::regconfig,
+                    COALESCE(chapter_title, ''::text)
+                ),
+                'A'::"char"
+            ) || setweight(
+                to_tsvector(
+                    'english'::regconfig,
+                    COALESCE(chapter_text, ''::text)
+                ),
+                'D'::"char"
+            )
         )
     ) stored
 );

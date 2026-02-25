@@ -21,6 +21,36 @@ func getHello(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Hello, HTTP!\n")
 }
 
+func getPluckyRequest(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		values := r.URL.Query()
+
+		var qString string
+		var url string
+
+		if values.Has("q") {
+			qString = values["q"][0]
+		}
+
+		if qString == "" {
+			url, _ = GetRandomBookUrl(dbpool)
+		} else {
+			hit, _ := ImFeelingPlucky(qString, dbpool)
+			url = hit.Book_Url
+		}
+
+		response := ResponseData{Status: "success", Message: url}
+		w.Header().Set("Content-Type", "application/json")
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+	}
+
+}
+
 func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -54,7 +84,7 @@ func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 		query.offset = pageNr * pageSize
 
 		// send it to db
-		result, err := search(query, dbpool)
+		result, err := Search(query, dbpool)
 
 		// respond
 		// jsonMessage, err := json.Marshal(result)

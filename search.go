@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -32,6 +33,7 @@ type SearchHit struct {
 	Excerpt     string
 	Rank        float32
 	Query       string `json:"-"`
+	Total_Count int    `json:"-"`
 }
 
 type Query struct {
@@ -40,7 +42,18 @@ type Query struct {
 	offset int
 }
 
-func search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
+func ImFeelingPlucky(query string, dbpool *pgxpool.Pool) (SearchHit, error) {
+
+	queryObj := Query{query: query, limit: 100, offset: 0}
+
+	queryResult, _ := Search(queryObj, dbpool)
+
+	hit := queryResult.Hits[rand.Intn(len(queryResult.Hits))]
+
+	return hit, nil
+}
+
+func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	log.Println("searching", query.query)
 
@@ -51,8 +64,7 @@ func search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	rows, _ := dbpool.Query(
 		context.Background(),
-		`select
-			book_url,
+		`select book_url,
 			chapter_url,
 			title,
 			chapter,
@@ -60,22 +72,33 @@ func search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 			ts_headline(
 				title || ' ' || chapter_title || ' ' || chapter_text,
 				query,
-				'StartSel=**,StopSel=**, MaxFragments=3, MinWords=5, MaxWords=100'
+				'StartSel=**,StopSel=**, MaxFragments=1, MinWords=5, MaxWords=100'
 			) as excerpt,
 			rank,
-			query
+			query,
+			count
 		from (
-				select *, books.url as book_url, ts_rank_cd(textsearchable_index_col, query) as rank from (
-						select *, chapters.url as chapter_url
-						from chapters,
-							websearch_to_tsquery($1) as query
-						where textsearchable_index_col @@ query
+				select *,
+					count(*) over () as count
+				from (
+						select distinct on (book_id, rank) *
+						from (
+								select *,
+									books.url as book_url,
+									ts_rank_cd('{0.014925373, 0.2, 0.4, 1.0}', textsearchable_index_col, query) as rank
+								from (
+										select *,
+											chapters.url as chapter_url
+										from chapters,
+											websearch_to_tsquery($1) as query
+										where textsearchable_index_col @@ query
+									)
+									join books on book_id = books.id
+								order by rank desc
+							) order by rank desc
 					)
-					join books on book_id = books.id
-				order by rank desc
-				limit $2
-				offset $3
-   		);`,
+				limit $2 offset $3
+			);`,
 		query.query, query.limit, query.offset)
 
 	queryPerformance.EndTime = int64(time.Now().UnixNano())
@@ -93,6 +116,10 @@ func search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	result.Performance = queryPerformance
 	result.Query = tsquery
+
+	if len(result.Hits) > 0 {
+		result.Performance.NumResults = result.Hits[0].Total_Count
+	}
 
 	log.Println(tsquery)
 
