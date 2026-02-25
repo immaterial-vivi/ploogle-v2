@@ -105,9 +105,11 @@ func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 
 }
 
-func ploogleV2Api(dbpool *pgxpool.Pool, pageSize int) (http.Handler, error) {
+func PloogleV2Api(dbpool *pgxpool.Pool, pageSize int) (http.Handler, error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", getHello)
-	mux.HandleFunc("/", getSearchRequest(dbpool, pageSize))
+	mux.HandleFunc("/search", getSearchRequest(dbpool, pageSize))
+	mux.HandleFunc("/plucky", getPluckyRequest(dbpool))
+
 	return mux, nil
 }

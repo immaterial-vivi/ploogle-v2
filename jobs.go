@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func queueJobs(dbpool *pgxpool.Pool) (http.Handler, error) {
+func QueueJobs(dbpool *pgxpool.Pool) (http.Handler, error) {
 	log.Println("cron starting")
 
 	scheduler, err := gocron.NewScheduler()

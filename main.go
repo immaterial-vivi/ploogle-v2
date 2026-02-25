@@ -99,8 +99,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	cronUi, err := queueJobs(dbpool)
-	ploogle, err := ploogleV2Api(dbpool, pageSize)
+	cronUi, err := QueueJobs(dbpool)
+	ploogle, err := PloogleV2Api(dbpool, pageSize)
 
 	mux.Handle("/api/v2/", http.StripPrefix("/api/v2", ploogle))
 	mux.Handle("/cron/", http.StripPrefix("/cron", cronUi))
