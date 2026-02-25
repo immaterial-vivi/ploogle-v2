@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/ArcadiaLin/go-epub"
@@ -47,6 +49,94 @@ type BlacklistEntry struct {
 	BookId    int       `db:"book_id"`
 	Reason    string    `db:"reason"`
 	CreatedAt time.Time `db:"created_at"`
+}
+
+func migrate(dbpool *pgxpool.Pool) {
+
+	log.Print("Running db migration...")
+
+	// get the schema defs and init the db
+	b, err := os.ReadFile("schema.sql") // just pass the file name
+	if err != nil {
+		fmt.Print(err)
+	}
+	schema := string(b)
+
+	_, err = dbpool.Exec(context.Background(), schema)
+
+	if err != nil {
+		log.Fatalln("Unable to load schema:", err)
+	}
+
+	log.Print("Done! \n")
+}
+
+func saveCrawlFailed(url string, dbpool *pgxpool.Pool) error {
+	_, err := dbpool.Exec(context.Background(), "insert into crawl_error (url) values ($1)", url)
+	return err
+}
+
+func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
+	book, err := epub.ReadBook(path)
+	if err != nil {
+		log.Println("could not read book at", path, err)
+		return err
+	}
+
+	title, err := book.Title()
+	author, err := book.Creator()
+	url, err := book.MetadataByKey("source")
+	bookUrl := url[0]
+
+	metadata := book.AllMetadata()
+	// fmt.Println("metadata:", metadata)\
+	description, ok := metadata["description"]
+	summary := ""
+	if ok {
+		summary = description[0]
+	}
+
+	if err != nil {
+		return err
+	}
+
+	var ebookData EBookData
+	ebookData.Author = author
+	ebookData.Title = title
+	ebookData.Url = bookUrl
+	ebookData.Summary = summary
+	ebookData.Chapters = book.Chapters
+
+	// get the dates
+	publishedAtDate, err := time.Parse(time.DateOnly, metadata["date"][0])
+	ebookData.PublishedAt = publishedAtDate
+	packagedAtDate, err := time.Parse(time.DateOnly, metadata["date"][1])
+	ebookData.PackagedAt = packagedAtDate
+	updatedAtDate, err := time.Parse(time.DateOnly, metadata["date"][2])
+	ebookData.UpdatedAt = updatedAtDate
+	if err != nil {
+		log.Println(err)
+	}
+	// log.Println(ebookData)
+	upsertBook(ebookData, dbpool)
+	return err
+
+}
+
+func fillDB(dbpool *pgxpool.Pool) {
+	booksDir := os.Getenv("BOOKS_DIR")
+
+	entries, err := os.ReadDir(booksDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, e := range entries {
+		log.Println("adding", e.Name())
+		bookPath := fmt.Sprintf("%s/%s", booksDir, e.Name())
+		insertOrUpdateBook(bookPath, dbpool)
+	}
+
 }
 
 // we only ever update a whole book at once because we fetch entire ebooks through fanficfare

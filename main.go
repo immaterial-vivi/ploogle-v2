@@ -4,104 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
-	"strings"
-	"time"
 
 	"flag"
 
-	"github.com/ArcadiaLin/go-epub"
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
-
-func migrate(dbpool *pgxpool.Pool) {
-
-	log.Print("Running db migration...")
-
-	// get the schema defs and init the db
-	b, err := os.ReadFile("schema.sql") // just pass the file name
-	if err != nil {
-		fmt.Print(err)
-	}
-	schema := string(b)
-
-	_, err = dbpool.Exec(context.Background(), schema)
-
-	if err != nil {
-		log.Fatalln("Unable to load schema:", err)
-	}
-
-	log.Print("Done! \n")
-}
-
-func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
-	book, err := epub.ReadBook(path)
-	if err != nil {
-		log.Println("could not read book:", err)
-		return err
-	}
-
-	title, err := book.Title()
-	author, err := book.Creator()
-	url, err := book.MetadataByKey("source")
-	bookUrl := url[0]
-
-	metadata := book.AllMetadata()
-	// fmt.Println("metadata:", metadata)\
-	description, ok := metadata["description"]
-	summary := ""
-	if ok {
-		summary = description[0]
-	}
-
-	if err != nil {
-		return err
-	}
-
-	var ebookData EBookData
-	ebookData.Author = author
-	ebookData.Title = title
-	ebookData.Url = bookUrl
-	ebookData.Summary = summary
-	ebookData.Chapters = book.Chapters
-
-	// get the dates
-	publishedAtDate, err := time.Parse(time.DateOnly, metadata["date"][0])
-	ebookData.PublishedAt = publishedAtDate
-	packagedAtDate, err := time.Parse(time.DateOnly, metadata["date"][1])
-	ebookData.PackagedAt = packagedAtDate
-	updatedAtDate, err := time.Parse(time.DateOnly, metadata["date"][2])
-	ebookData.UpdatedAt = updatedAtDate
-	if err != nil {
-		log.Println(err)
-	}
-	// log.Println(ebookData)
-	upsertBook(ebookData, dbpool)
-	return err
-
-}
-
-func fillDB(dbpool *pgxpool.Pool) {
-	booksDir := os.Getenv("BOOKS_DIR")
-
-	entries, err := os.ReadDir(booksDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, e := range entries {
-		log.Println("adding", e.Name())
-		bookPath := fmt.Sprintf("%s/%s", booksDir, e.Name())
-		insertOrUpdateBook(bookPath, dbpool)
-	}
-
-}
 
 func main() {
 
@@ -114,6 +27,7 @@ func main() {
 	// -----
 	shouldMigrateDbPtr := flag.Bool("m", false, "migrate the db schema")
 	shouldLoadDbPtr := flag.Bool("l", false, "load books from bookdir into the db")
+	shouldRecrawlPtr := flag.Bool("c", false, "crawl ao3")
 
 	queryPtr := flag.String("q", "", "search for this")
 	pagePtr := flag.Int("p", 0, "page")
@@ -151,37 +65,35 @@ func main() {
 	defer dbpool.Close()
 	// -----
 
-	reader, _ := os.ReadFile("../test.html")
-
-	parsePage(io.NopCloser(strings.NewReader(string(reader))))
-	//fetchBooks(dbpool)
-	//fetchBook("/works/66691849/chapters/172065550")
-	//findPdfDest(test)
-	return
-
 	// apply database schema
 	if *shouldMigrateDbPtr {
 		migrate(dbpool)
 	}
 
 	// reload books from disk
-	if *shouldLoadDbPtr || true {
+	if *shouldLoadDbPtr {
 		fillDB(dbpool)
 	}
 
-	var query Query
-
-	query.query = *queryPtr
-	query.limit = pageSize
-	query.offset = *pagePtr * pageSize
-
-	res, err := search(query, dbpool)
-
-	if err != nil {
-		log.Fatalln(err)
+	// crawl web site
+	if *shouldRecrawlPtr {
+		fetchBooks(dbpool)
 	}
-	resJson, err := json.Marshal(res)
 
-	fmt.Println(string(resJson), err)
+	if *queryPtr != "" {
+		var query Query
+		query.query = *queryPtr
+		query.limit = pageSize
+		query.offset = *pagePtr * pageSize
+
+		res, err := search(query, dbpool)
+
+		if err != nil {
+			log.Fatalln(err)
+		}
+		resJson, err := json.Marshal(res)
+
+		fmt.Println(string(resJson), err)
+	}
 
 }
