@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func BasicGuard(next http.Handler, user string, password string) http.Handler {
+func BasicGuard(user string, password string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		validUsername := user
@@ -23,7 +23,7 @@ func BasicGuard(next http.Handler, user string, password string) http.Handler {
 	})
 }
 
-func RequireApiKey(next http.Handler, apiKey string) http.Handler {
+func RequireApiKey(apiKey string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqKey := r.Header.Get("x-ploogle-api-key")
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -71,20 +72,30 @@ func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 		}
 
 		var pString string
-		var pageNr int
+		pageNr := 1
 
 		if values.Has("p") {
 			pString = values["p"][0]
-			pageNr, _ = strconv.Atoi(pString)
+			pInt, _ := strconv.Atoi(pString)
+			pageNr = max(pInt, 1)
 		}
 
 		var query Query
 		query.query = qString
 		query.limit = pageSize
-		query.offset = pageNr * pageSize
+		query.offset = (pageNr - 1) * pageSize
 
 		// send it to db
 		result, err := Search(query, dbpool)
+
+		// insert
+		if len(result.Hits) > 0 {
+			result.Page.Results = result.Hits[0].Total_Count
+		}
+
+		result.Page.Page = pageNr
+		result.Page.Pages = int(math.Ceil(float64(result.Page.Results) / float64(pageSize)))
+		result.Page.PerPage = pageSize
 
 		// respond
 		// jsonMessage, err := json.Marshal(result)

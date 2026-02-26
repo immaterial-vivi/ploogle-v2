@@ -12,12 +12,20 @@ import (
 
 type QueryResult struct {
 	Hits        []SearchHit
+	TsQuery     string
 	Query       string
 	Performance QueryPerformance
+	Page        Page
+}
+
+type Page struct {
+	Results int
+	Pages   int
+	Page    int
+	PerPage int
 }
 
 type QueryPerformance struct {
-	NumResults int
 	// all time in nano seconds
 	StartTime int64
 	EndTime   int64
@@ -115,12 +123,8 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	err = dbpool.QueryRow(context.Background(), "select websearch_to_tsquery('english', $1);", query.query).Scan(&tsquery)
 
 	result.Performance = queryPerformance
-	result.Query = tsquery
-
-	if len(result.Hits) > 0 {
-		result.Performance.NumResults = result.Hits[0].Total_Count
-	}
-
+	result.TsQuery = tsquery
+	result.Query = query.query
 	log.Println(tsquery)
 
 	return &result, nil

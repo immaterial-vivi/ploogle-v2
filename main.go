@@ -24,6 +24,10 @@ func main() {
 		log.Println("No .env file found, all config coming from system env")
 	}
 
+	apiKey := os.Getenv("PLOOGLE_API_KEY")
+	adminUser := os.Getenv("PLOOGLE_ADMIN")
+	adminPassword := os.Getenv("PLOOGLE_ADMIN_PW")
+
 	// parse commandline arguments
 	// -----
 	shouldMigrateDbPtr := flag.Bool("m", false, "migrate the db schema")
@@ -102,8 +106,8 @@ func main() {
 	cronUi, err := QueueJobs(dbpool)
 	ploogle, err := PloogleV2Api(dbpool, pageSize)
 
-	mux.Handle("/api/v2/", http.StripPrefix("/api/v2", ploogle))
-	mux.Handle("/cron/", http.StripPrefix("/cron", cronUi))
+	mux.Handle("/api/v2/", RequireApiKey(apiKey, http.StripPrefix("/api/v2", ploogle)))
+	mux.Handle("/cron/", BasicGuard(adminUser, adminPassword, http.StripPrefix("/cron", cronUi)))
 
 	log.Println("Server starting on :9005!")
 	log.Fatal(http.ListenAndServe(":9005", RequestLog(mux)))

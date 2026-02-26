@@ -1,0 +1,20 @@
+import { redirect } from "@sveltejs/kit";
+
+export const search = async (event) => {
+
+    const { request } = event
+    const data = await request.formData();
+    const query = data.get("query")
+    console.log(data)
+    console.log("search", query)
+
+    redirect(303, `/search?q=${query}`);
+    // console.log("search", event)
+}
+export const plucky = async (event) => {
+
+    const { request } = event
+    const data = await request.formData();
+    console.log("plucky", data)
+
+}
