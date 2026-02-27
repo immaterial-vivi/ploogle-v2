@@ -3,12 +3,12 @@ module github.com/immaterial-vivi/PloogleApiService
 go 1.25.7
 
 require (
+	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.11.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/gofrs/uuid/v5 v5.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -32,4 +32,4 @@ require (
 	golang.org/x/text v0.33.0 // indirect
 )
 
-replace github.com/ArcadiaLin/go-epub => github.com/immaterial-vivi/go-epub v0.1.3
+replace github.com/ArcadiaLin/go-epub => github.com/immaterial-vivi/go-epub v0.1.4

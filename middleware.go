@@ -5,20 +5,15 @@ import (
 	"net/http"
 )
 
-func BasicGuard(user string, password string, next http.Handler) http.Handler {
+func BasicGuard(username string, password string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		validUsername := user
-		validPassword := password
-		username, passowrd, ok := r.BasicAuth()
-
-		if !ok || username != validUsername || passowrd != validPassword {
+		queryUsername, queryPassword, ok := r.BasicAuth()
+		if !ok || queryUsername != username || queryPassword != password {
 			w.Header().Set("WWW-Authenticate", `Basic realm="protected"`)
 			http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
 			log.Println("rejected unauthorized request to", r.URL.Path, "by", r.UserAgent())
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }

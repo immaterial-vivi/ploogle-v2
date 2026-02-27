@@ -38,6 +38,9 @@ func main() {
 	pagePtr := flag.Int("p", 0, "page")
 	pageSize, err := strconv.Atoi(os.Getenv("PLOOGLE_PAGE_SIZE"))
 
+	//debug things
+	bookPathPtr := flag.String("book", "", "insert book into db")
+
 	fmt.Println(pageSize, err)
 	flag.Parse()
 	// -----
@@ -83,6 +86,16 @@ func main() {
 	// crawl web site
 	if *shouldRecrawlPtr {
 		fetchBooks(dbpool)
+	}
+
+	if *bookPathPtr != "" {
+		pwd, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(pwd)
+		insertOrUpdateBook(*bookPathPtr, dbpool)
 	}
 
 	if *queryPtr != "" {
