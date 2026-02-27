@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -33,20 +34,31 @@ func getPluckyRequest(dbpool *pgxpool.Pool) http.HandlerFunc {
 			qString = values["q"][0]
 		}
 
+		startTime := int64(time.Now().UnixNano())
+
 		if qString == "" {
 			url, _ = GetRandomBookUrl(dbpool)
 		} else {
+
 			hit, _ := ImFeelingPlucky(qString, dbpool)
 			url = hit.Book_Url
 		}
+		endTime := int64(time.Now().UnixNano())
 
 		response := ResponseData{Status: "success", Message: url}
 		w.Header().Set("Content-Type", "application/json")
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
+
+		queryInfo := PluckyInfo{
+			QueryString: qString,
+			Latency:     endTime - startTime,
+			BookUrl:     url,
+		}
+
+		LogPlucky(dbpool, queryInfo)
 
 	}
 
@@ -109,9 +121,18 @@ func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
 
+		queryInfo := QueryInfo{
+			QueryString: qString,
+			CreatedAt:   time.Time{},
+			Latency:     result.Performance.DeltaTime,
+			ResultCount: result.Page.Results,
+			TsQuery:     result.TsQuery,
+			Page:        pageNr,
+		}
+
+		LogQuery(dbpool, queryInfo)
 	}
 
 }

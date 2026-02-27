@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ploogle Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <h1 class="header-title">
+                <span id="main-title">Ploogle Dashboard</span>
+                <small id="powered-by" class="powered-by">powered by plants!</small>
+            </h1>
+            <nav class="header-nav">
+                <ol>
+                    <li><a href="/dash">Dashboard</a></li>
+                    <li><a href="/dash/blacklist.html">Blacklist</a></li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <!--
+      each chart has to have a canvas to render the data, a dropdown to select the time range, an endpoint to call,
+      a heading (lol that's easy at least
+    -->
+
+    <div>
+        <span class="sub-header"># of requests</span>
+        <!-- as a time series stacked bar chart, aggregated by day, broken down by status code 200-399, 400-499, 500+  -->
+
+        <canvas id="requests_chart"></canvas>
+
+        <div class="info">
+            <div class="info-card">total requests: <span id="req-count">1000</span></div>
+            <div class="info-card">total 200: <span id="success-count">500</span></div>
+            <div class="info-card">total error: <span id="error-count">500</span></div>
+            <div class="info-card">error rate: <span id="error-rate">50%</span></div>
+        </div>
+    </div>
+
+
+    <div>
+        <span class="sub-header">average db search latency in ms per day</span>
+        <!-- as a time series line plot, aggregated by day -->
+        <canvas id="latency_chart"></canvas>
+        <div class="info">
+            <div class="info-card">average latency: <span id="avg-latency">1000</span>ms</div>
+            <div class="info-card">min latency: <span id="min-latency">500</span>ms</div>
+            <div class="info-card">max latency: <span id="max-latency">500</span>ms</div>
+        </div>
+    </div>
+
+    <div>
+        <span class="sub-header">recent searches: </span>
+        <ol>
+            <li>foo</li>
+            <li>bar</li>
+            <li>baz</li>
+        </ol>
+    </div>
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const requestsChart = document.getElementById('requests_chart');
+    const latencyChart = document.getElementById('latency_chart');
+
+    requestsData = {
+        labels: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        datasets: [
+            {
+                label: "200",
+                data: [100, 200, 200, 200, 300, 100, 20],
+                backgroundColor: "#3e8839"
+            },
+            {
+                label: "400",
+                data: [100, 200, 200, 200, 300, 100, 20],
+                backgroundColor: "#854950"
+            },
+            {
+                label: "500",
+                data: [100, 200, 200, 200, 300, 100, 20],
+                backgroundColor: "#cc1a1a"
+            }
+        ]
+    }
+
+    queriesData = {
+        labels: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        datasets: [
+            {
+                label: "ms",
+                data: [500, 400, 500, 600, 1200, 800, 600],
+                backgroundColor: "#3e8839"
+            }
+        ]
+    }
+
+
+    new Chart(latencyChart, {
+        type: 'line',
+        data: queriesData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    new Chart(requestsChart, {
+        type: 'bar',
+        data: requestsData,
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Chart.js Bar Chart - Stacked'
+                },
+            },
+            responsive: true,
+            scales: {
+                x: {
+                    stacked: true,
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true
+
+                }
+            }
+        }
+    })
+
+</script>
+
+</body>
+</html>

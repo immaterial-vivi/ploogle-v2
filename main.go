@@ -122,7 +122,9 @@ func main() {
 	mux.Handle("/api/v2/", RequireApiKey(apiKey, http.StripPrefix("/api/v2", ploogle)))
 	mux.Handle("/cron/", BasicGuard(adminUser, adminPassword, http.StripPrefix("/cron", cronUi)))
 
+	mux.Handle("/dash/", BasicGuard(adminUser, adminPassword, http.StripPrefix("/dash", DashboardApi(dbpool))))
+
 	log.Println("Server starting on :9005!")
-	log.Fatal(http.ListenAndServe(":9005", RequestLog(mux)))
+	log.Fatal(http.ListenAndServe(":9005", RequestLog(dbpool, mux)))
 
 }

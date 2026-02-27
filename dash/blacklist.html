@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ploogle Blacklist</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <h1 class="header-title">
+                <span id="main-title">Ploogle Dashboard</span>
+                <small id="powered-by" class="powered-by">powered by plants!</small>
+            </h1>
+            <nav class="header-nav">
+                <ol>
+                    <li><a href="/dash">Dashboard</a></li>
+                    <li><a href="/dash/blacklist.html">Blacklist</a></li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <table
+            id="blacklist">
+        <thead>
+        <tr>
+            <th scope="col">Book Id</th>
+            <th scope="col">Book Title</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Blacklisted At</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody id="blacklist-table">
+
+        </tbody>
+    </table>
+    <form action="/dash/blacklist/add" method="post" class="add-form info-card">
+        <span>Add book to blacklist!</span>
+        <label for="url">
+            url :
+            <input type="text" id ="url" name="url">
+        </label>
+
+        <label for="reason">
+            reason:
+            <input type="text" id ="reason" name="reason">
+        </label>
+        <input type="submit" value="Submit" class="btn-primary">
+    </form>
+</main>
+
+</body>
+
+<script>
+
+    blacklistElement = document.getElementById('blacklist');
+    blacklistTableElement = document.getElementById('blacklist-table');
+
+    async function getBlacklist() {
+        let res = await fetch('/dash/blacklist');
+        message = await res.json();
+        blacklistTableElement.innerText = "";
+        message.forEach(element => {
+            elementRow = blacklistElement.insertRow(-1);
+
+            let idCell = document.createElement("th")
+            elementRow.appendChild(idCell);
+
+            let titleCell = elementRow.insertCell(1);
+            let reasonCell = elementRow.insertCell(2);
+            let atCell = elementRow.insertCell(3);
+            let actionCell = elementRow.insertCell(4);
+
+
+            idCell.innerText = element.book_id
+            titleCell.innerText = element.book_title
+            reasonCell.innerText = element.reason
+            atCell.innerText = element.blacklisted_at
+            // actionCell.innerText = element.blacklist_entry_id
+
+            removeButton = document.createElement("button")
+            removeButton.innerText = "Remove from blacklist"
+            removeButton.className = "btn-sm"
+            removeButton.addEventListener("click", async () => {
+                await fetch(`/dash/blacklist/remove`, {
+                    method: 'DELETE',
+                    body: JSON.stringify({blacklist_id: element.blacklist_entry_id})
+                })
+                window.location.reload();
+            })
+            actionCell.appendChild(removeButton)
+
+        })
+    }
+
+    getBlacklist();
+
+</script>
+</html>

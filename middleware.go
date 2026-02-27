@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/urfave/negroni"
 )
 
 func BasicGuard(username string, password string, next http.Handler) http.Handler {
@@ -32,9 +35,23 @@ func RequireApiKey(apiKey string, next http.Handler) http.Handler {
 	})
 }
 
-func RequestLog(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func RequestLog(dbpool *pgxpool.Pool, next http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.Method, r.URL.Path, r.UserAgent())
-		next.ServeHTTP(w, r)
-	})
+		lrw := negroni.NewResponseWriter(w)
+
+		next.ServeHTTP(lrw, r)
+		statusCode := lrw.Status()
+
+		requestInfo := RequestInfo{
+			Status:    statusCode,
+			Method:    r.Method,
+			Path:      r.URL.Path,
+			UserAgent: r.UserAgent(),
+		}
+
+		LogRequest(dbpool, requestInfo)
+
+		log.Printf("<-- %d %s", statusCode, http.StatusText(statusCode))
+	}
 }
