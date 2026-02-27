@@ -51,3 +51,14 @@
 		{/if}
 	</ol>
 {/if}
+
+<style>
+	.pages {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		list-style: none;
+		gap: 1rem;
+	}
+</style>

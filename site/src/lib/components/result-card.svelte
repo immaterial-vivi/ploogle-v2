@@ -10,3 +10,7 @@
 	<p>{result.Excerpt}</p>
 	<span>{result.Chapter ? result.Chapter_Url : result.Book_Url}</span>
 </div>
+
+<style>
+	div {}
+</style>
