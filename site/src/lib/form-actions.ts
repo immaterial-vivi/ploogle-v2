@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 
-export const search = async (event) => {
+export const search = async (event:any) => {
 
     const { request } = event
     const data = await request.formData();
@@ -11,7 +11,7 @@ export const search = async (event) => {
     redirect(303, `/search?q=${query}`);
     // console.log("search", event)
 }
-export const plucky = async (event) => {
+export const plucky = async (event:any) => {
 
     const { request } = event
     const data = await request.formData();

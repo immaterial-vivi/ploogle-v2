@@ -32,6 +32,27 @@
     box-sizing: border-box;
 }
 
+.sr-only:not(:focus):not(:active) {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.skip-link:focus {
+    position:absolute;
+    top:.5rem;
+    left:.5rem;
+    border: 1px solid var(--a-yellow);
+    color: var(--a-yellow);
+    padding: .5rem 0.25rem;
+    background-color: var(--a-blue-low);
+}
+
 body {
 
     font-family: "Playpen Sans", sans-serif;
@@ -40,4 +61,5 @@ body {
     flex-direction: column;
 
     background: url("/img/background.svg") var(--space-blue-low);
+    background-repeat: repeat;
 }

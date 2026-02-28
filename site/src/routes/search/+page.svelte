@@ -2,19 +2,22 @@
     import Footer from '$lib/components/footer.svelte';
     import Pagination from '$lib/components/pagination.svelte';
     import ResultCard from '$lib/components/result-card.svelte';
-    import SearchForm from '$lib/components/search-form.svelte';
+    import HeaderSearchForm from '$lib/components/header-search-form.svelte';
     import type {PageProps} from './$types';
 
     let {data}: PageProps = $props();
 </script>
 
 <header class="header">
+    <a href="#main-content" class="sr-only skip-link">skip to search results</a>
     <div class="header-content">
-        <SearchForm query={data.message.Query}/>
+        <span class="logo">Ploogle</span>
+        <HeaderSearchForm query={data.message.Query}/>
+        <a href="https://humandomestication.guide">back to wiki</a>
     </div>
 </header>
 
-<main class="main-content">
+<main class="main-content" id="#main-content">
     <div class="container">
         <ol>
             {#each data.message.Hits as hit}
@@ -46,14 +49,23 @@
         padding-bottom: 1rem;
     }
 
-    li {
-
+    .logo {
+        float: left;
     }
 
     .header {
         background: url("/img/banner.gif");
         height: 5rem;
         border-bottom: 1px var(--affini-pink-main) solid;
+        padding: 0 1rem;
+    }
+
+    .header-content {
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .container {

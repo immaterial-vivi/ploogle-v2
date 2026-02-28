@@ -8,6 +8,6 @@
 		<input name="query" type="text" value={query} />
 	</label>
 
-	<button>Search</button>
+	<input type="submit" id="submit" value="Search" />
 	<button formaction="?/plucky">I'm feeling plucky!</button>
 </form>
