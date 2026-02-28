@@ -8,20 +8,23 @@
     let {data}: PageProps = $props();
 </script>
 
-<header class="header">
+<header class="header ">
     <a href="#main-content" class="sr-only skip-link">skip to search results</a>
-    <div class="header-content">
-        <span class="logo">Ploogle</span>
+    <div class="header-content container">
+        <a href="/" class="logo">Ploogle</a>
         <HeaderSearchForm query={data.message.Query}/>
-        <a href="https://humandomestication.guide">back to wiki</a>
+        <a href="https://humandomestication.guide" class="wiki-link font-boring">back to hd.g</a>
     </div>
 </header>
 
 <main class="main-content" id="#main-content">
-    <div class="container">
-        <ol>
+    <div class="container content">
+        <span class="results-count">found {data.message.Page.Results}
+            results in {(data.message.Performance.DeltaTime / 1e9).toFixed(3)} s </span>
+
+        <ol class="results-list">
             {#each data.message.Hits as hit}
-                <li>
+                <li class="results-item">
                     <ResultCard result={hit}/>
                 </li>
             {/each}
@@ -34,10 +37,6 @@
         />
     </div>
 </main>
-<span>total results: {data.message.Page.Results}</span>
-<span>database took: {(data.message.Performance.DeltaTime / 1e9).toFixed(3)}s</span>
-
-
 <Footer/>
 
 <style>
@@ -50,12 +49,23 @@
     }
 
     .logo {
-        float: left;
+        text-decoration: none;
+        cursor: pointer;
+        font-family: Fugaz One, sans, sans-serif;
+        font-weight: bold;
+        font-size: 2rem;
+        color: var(--affini-pink-main);
+        transition: all 0.2s;
+
+        &:hover {
+            text-decoration: underline;
+            color: white;
+
+        }
     }
 
     .header {
         background: url("/img/banner.gif");
-        height: 5rem;
         border-bottom: 1px var(--affini-pink-main) solid;
         padding: 0 1rem;
     }
@@ -63,9 +73,17 @@
     .header-content {
         height: 100%;
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         align-items: center;
         justify-content: space-between;
+        & > * {
+            padding:  1rem 0;
+        }
+    }
+
+    .main-content {
+        position: relative;
+        z-index: -1;
     }
 
     .container {
@@ -73,6 +91,104 @@
         margin: 0 auto;
         padding: 1rem 1rem;
         width: 100%;
-        background: rgba(4 11 32 / .9);
     }
+
+    .content {
+        background: rgba(4 11 32 / .95);
+    }
+
+    .results-count {
+        position: relative;
+        display: inline-block;
+        border: 1px solid var(--a-light-blue);
+        background: oklab(from var(--a-light-blue) l a b / 0.1);
+        padding: 0.5rem 1rem;
+        margin: 1rem auto;
+        text-align: center;
+        color: var(--a-light-blue);
+        border-radius: 1rem 1rem 0 1rem;
+    }
+
+
+    .results-list {
+        padding-bottom: 2rem;
+    }
+
+    .results-list > *:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        width: 8rem;
+        margin: auto;
+        left: 0;
+        right: 0;
+        height: 24px;
+        background: /*url("/img/favicon.svg") no-repeat center center / 24px 24px,*/ linear-gradient(var(--a-blue-low)) no-repeat 0 center / 2rem 2px,
+        linear-gradient(var(--a-blue-low)) no-repeat 6rem center / 2rem 2px;
+        /*            radial-gradient(*/
+        /*                    var(--a-blue-low) 0 1px,*/
+        /*                rgba( 0 0 0 / 0) 1px 4px*/
+        /*            )  center center / 4px 4px;*/
+    }
+
+    .results-list > *:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        bottom: -0px;
+        width: 48px;
+        margin: auto;
+        left: 0;
+        right: 0;
+        height: 18px;
+        clip-path: polygon(25% 0%, 49% 0%, 23% 100%, 34% 100%, 61% 0%, 76% 0%, 47% 100%, 61% 100%, 90% 0%, 100% 0%, 73% 100%, 50% 100%, 13% 100%, 0% 100%);
+        background-color: var(--a-blue-low);
+
+    }
+
+
+    .results-list > *:not(:last-child) {
+        position: relative;
+        padding-bottom: 2rem;
+    }
+
+    .wiki-link::before {
+        content: "";
+        position: absolute;
+        top:   0;
+        left: -2rem;
+        width: 2rem;
+        bottom: 0;
+        background: url("/img/favicon.svg") no-repeat center center / contain;
+    }
+    .wiki-link {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        margin: 0 ;
+        max-width: 20rem;
+        color: rgba(0 0 0 / 0 );
+        text-decoration: underline rgba(255 255 255 / 0);
+        transition: text-decoration-color 100ms;
+        &:hover {
+            text-decoration: underline rgba(255 255 255 / 1);
+        }
+    }
+
+    @media screen and (min-width: 768px) {
+        .header-content {
+            flex-direction: row;
+            & > * {
+                padding:  unset;
+            }
+        }
+
+        .wiki-link {
+            position: relative;
+            color: var(--a-yellow);
+            width: unset;
+
+        }
+    }
+
 </style>

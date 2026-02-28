@@ -83,7 +83,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 				   ts_headline(
 						   title || ' ' || chapter_title || ' ' || chapter_text,
 						   query,
-						   'StartSel=**,StopSel=**, MaxFragments=1, MinWords=5, MaxWords=100'
+						   'StartSel=<em>,StopSel=</em>, MaxFragments=1, MinWords=5, MaxWords=100'
 				   )                     as excerpt,
 				   rank                  as rank,
 				   count(*) over () as total_count,

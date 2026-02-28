@@ -53,6 +53,15 @@
     background-color: var(--a-blue-low);
 }
 
+.font-boring {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.smol {
+    font-size: .8rem;
+    color: lightgray;
+}
+
 body {
 
     font-family: "Playpen Sans", sans-serif;
@@ -62,4 +71,6 @@ body {
 
     background: url("/img/background.svg") var(--space-blue-low);
     background-repeat: repeat;
+    background-size: 1200px 1200px;
 }
+

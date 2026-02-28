@@ -36,7 +36,7 @@
 		{#each pages as page}
 			<li class="page">
 				{#if page.active}
-					{page.num}
+					<span class="current-page"> {page.num} </span>
 				{:else}
 					<a href="{baseUrl}&{pageParamName}={page.num}">
 						{page.num}
@@ -61,4 +61,32 @@
 		list-style: none;
 		gap: 1rem;
 	}
+	a {
+		text-decoration: underline 0.15em rgba(0, 0, 0, 0);
+		font-size: x-large;
+		font-family: "Fugaz One", sans-serif;
+		transition: text-decoration-color 100ms;
+		cursor: pointer;
+		color: var(--a-light-blue);
+
+		&:visited {
+			color: var(--a-mid-teal);
+		}
+		&:hover:not(:visited) {
+			text-decoration: underline 0.15em var(--a-light-blue);
+		}
+		&:hover:visited {
+			text-decoration: underline 0.15em var(--a-mid-teal);
+		}
+		&:hover{
+			transform: scale(1.1);
+		}
+	}
+
+	.current-page {
+		font-size: xx-large;
+		font-family: "Fugaz One", sans-serif;
+		text-shadow: 0 0 4px rgba(255 255 255 / .5);
+	}
+
 </style>

@@ -16,8 +16,9 @@
         <span class="sr-only">Search</span></button>
     <!--	<button formaction="?/plucky">I'm feeling plucky!</button>-->
 
-    <div class="hint-button">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+    <div class="hint-button" tabindex="0">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="#040B20" viewBox="0 0 24 24" stroke-width="1.5"
+             stroke="currentColor"
              class="icon" width="24" height="24">
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>
@@ -62,7 +63,7 @@
         background: none;
         font-size: 1.25rem;
         color: var(--a-yellow);
-        margin: 0.5rem 0.5rem 0.5rem 1rem;
+        margin: 0.5rem 0.5rem 0.5rem 1.5rem;
     }
 
     input[type=text]:focus {
@@ -103,15 +104,17 @@
         transition: 0.1s all ease-out;
 
     }
+
     #submit:hover {
         color: white;
         transform: scale(1.2);
     }
+
     .hint-button {
         color: var(--a-yellow);
         position: absolute;
-        right: -3rem;
-        top: 0.7rem;
+        right: 1.5rem;
+        top: -3.5rem;
 
     }
 
@@ -125,33 +128,55 @@
     .hint {
         color: white;
         position: absolute;
-        right: -18rem;
-        top: 3rem;
+        right: 0;
+        top: 0rem;
         display: block;
         border: 1px solid var(--a-light-blue);
         background: var(--space-blue-low);
         padding: 0.5rem 1rem;
         font-size: medium;
-        width: 30rem;
+        max-width: 30rem;
         opacity: 0;
         transition: opacity 0.2s ease-out;
         box-shadow: 0px 4px 4px 4px rgba(0 0 0 /.6);
         visibility: hidden;
+        z-index: 10;
+
         > li {
             margin-inline-start: 0.5rem;
             line-height: 1.8;
             list-style-type: "-";
+
             > span {
-                background-color: rgba( 255 255 255 / 0.1) ;
+                background-color: rgba(255 255 255 / 0.1);
                 padding: 0.1rem 0.25rem;
                 border-radius: 0.25rem;
+
             }
+
             > em {
                 font-weight: bold;
+                color: oklab(from var(--a-yellow) 10 a b / 1);
             }
+
         }
     }
 
+
+    @media screen and (min-width: 768px) {
+        .hint {
+            right: -18rem;
+            top: 3rem;
+        }
+
+        .hint-button {
+            color: var(--a-yellow);
+            position: absolute;
+            right: -3rem;
+            top: 0.7rem;
+            left: unset;
+        }
+    }
 
 
 </style>
