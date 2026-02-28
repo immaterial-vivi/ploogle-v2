@@ -5,8 +5,13 @@
     --a-blue-low: #151b34;
     --space-blue-low: #040B20;
     --a-mid-teal: #31cbb1;
-
     color-scheme: only dark;
+}
+
+@media screen and (min-width: 1024px) {
+    :root {
+        font-size: 14pt;
+    }
 }
 
 @font-face {
@@ -44,9 +49,9 @@
 }
 
 .skip-link:focus {
-    position:absolute;
-    top:.5rem;
-    left:.5rem;
+    position: absolute;
+    top: .5rem;
+    left: .5rem;
     border: 1px solid var(--a-yellow);
     color: var(--a-yellow);
     padding: .5rem 0.25rem;

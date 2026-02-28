@@ -14,6 +14,11 @@
 </div>
 
 <style>
+
+	h2 {
+		font-size: 1.75rem;
+		font-family: "Fugaz One";
+	}
 	a {
 		text-decoration: underline 0.15em rgba(0, 0, 0, 0);
 		transition: text-decoration-color 100ms;
@@ -34,6 +39,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: .5rem;
+		border: 1px solid var(--a-blue-low);
+		border-radius: 0.5rem;
+		padding: 1rem;
 	}
 
 
