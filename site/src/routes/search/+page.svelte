@@ -68,6 +68,7 @@
         background: url("/img/banner.gif");
         border-bottom: 1px var(--affini-pink-main) solid;
         padding: 0 1rem;
+        z-index: 9;
     }
 
     .header-content {
@@ -83,7 +84,7 @@
 
     .main-content {
         position: relative;
-        z-index: -1;
+        z-index: 0;
     }
 
     .container {
