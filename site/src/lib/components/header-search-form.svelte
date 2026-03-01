@@ -13,7 +13,8 @@
 
     <button type="submit" id="submit" class="search-button">
         <SearchIcon class="button-icon"/>
-        <span class="sr-only">Search</span></button>
+        <span class="sr-only">Search</span>
+    </button>
     <!--	<button formaction="?/plucky">I'm feeling plucky!</button>-->
 
     <div class="hint-button" tabindex="0">
@@ -26,6 +27,7 @@
     </div>
 
     <ul class="hint">
+        <span class="sr-only">Tips for more accurate results:</span>
         <li>
             <span>"quoted text"</span> to search for phrases
         </li>

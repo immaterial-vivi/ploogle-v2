@@ -13,4 +13,11 @@
     max-height: 300px;
     margin: auto;
 }
+
+@media screen and (min-width: 768px) {
+    .hero-flort {
+        max-width: 600px;
+        max-height: 600px;
+    }
+}
 </style>
