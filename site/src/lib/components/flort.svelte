@@ -14,7 +14,14 @@
     margin: auto;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 768px) and (min-height: 1080px) {
+    .hero-flort {
+        max-width: 450px;
+        max-height: 450px;
+    }
+}
+
+@media screen and (min-width: 768px) and (min-height: 1200px) {
     .hero-flort {
         max-width: 600px;
         max-height: 600px;

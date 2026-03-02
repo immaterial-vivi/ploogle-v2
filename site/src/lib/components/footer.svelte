@@ -34,12 +34,23 @@
 <style>
 
     .footer {
-        background: url("/img/footer.gif");
+        background: url("/img/footer.gif") no-repeat 0 0  / cover;
         width: 100%;
         border-top: 1px var(--affini-pink-main) solid;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        position: relative;
     }
 
+    .footer::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: -50px;
+        right: 12px;
+        width: 64px;
+        height: 50px;
+        background: url("/img/bnuy.svg") no-repeat 0 0 / 64px 64px;
+    }
 
 
     .container {

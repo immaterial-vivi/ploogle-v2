@@ -90,7 +90,7 @@
     .container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 1rem 1rem;
+        padding: 1rem 1rem 3rem 1rem;
         width: 100%;
     }
 
@@ -177,6 +177,7 @@
     }
 
     @media screen and (min-width: 768px) {
+
         .header-content {
             flex-direction: row;
             & > * {
@@ -184,6 +185,9 @@
             }
         }
 
+        .container {
+            padding: 1rem 1rem;
+        }
         .wiki-link {
             position: relative;
             color: var(--a-yellow);

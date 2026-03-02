@@ -4,7 +4,8 @@ export const search = async (event:any) => {
 
     const { request } = event
     const data = await request.formData();
-    const query = data.get("query")
+    const query = encodeURI(data.get("query"))
+
     console.log(data)
     console.log("search", query)
 

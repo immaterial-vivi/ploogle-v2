@@ -1,4 +1,5 @@
 <script lang="ts">
+
     import romLogo from '$lib/assets/rom-icon.png';
     import ao3Logo from '$lib/assets/ao3-icon.png';
     import { resolve } from '$app/paths';
@@ -31,7 +32,7 @@
         <img class="source-icon" alt="{selectIconForUrl(result).n}-icon" src={selectIconForUrl(result).l} />
         <span class="font-boring smol url-hint">{shortChapterUrl()}</span>
     </a>
-    <a href={resolve(chapterUrl())} target="_blank" rel="noopener noreferrer">
+    <a href={chapterUrl()} target="_blank" rel="noopener noreferrer">
         <h2>{result.Title}{result.Chapter ? `, Chapter ${result.Chapter}` : ''}</h2></a
     >
     <span class="author font-boring">{result.Author}</span>
@@ -84,7 +85,6 @@
         gap: .5rem;
         /*border: 1px solid var(--a-blue-low);*/
         border-radius: 0.5rem;
-        padding: 0 1rem;
     }
 
 
@@ -136,11 +136,14 @@
     /*	color: oklab( from var(--a-blue-low) l a b / 1);*/
     /*	z-index: -1;*/
     /*}*/
-    .url-hint {
-        display: none;
-    }
+    /*.url-hint {*/
+    /*    display: none;*/
+    /*}*/
 
     @media screen and (min-width: 768px) {
+        .card {
+            padding: 0 1rem;
+        }
         .url-hint {
             display: block;
         }
