@@ -12,3 +12,10 @@
 </svelte:head>
 
 {@render children()}
+
+<style>
+	body :global{
+
+	}
+
+</style>

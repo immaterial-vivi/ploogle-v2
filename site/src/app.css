@@ -7,7 +7,8 @@
     --a-mid-teal: #31cbb1;
     color-scheme: only dark;
 
-    --content-bg: rgba(from var(--space-blue-low) r g b / 0.95)
+    --content-bg: rgba(from var(--space-blue-low) r g b / 0.95);
+
 }
 
 @media screen and (min-width: 1024px) {
@@ -37,6 +38,9 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    scrollbar-gutter: stable;
+    scrollbar-color: var(--affini-pink-main) rgba(0 0 0 / 0);
+
 }
 
 .sr-only:not(:focus):not(:active) {
@@ -79,6 +83,7 @@ body {
     background: url("/img/background.svg") var(--space-blue-low);
     background-repeat: repeat;
     background-size: 1200px 1200px;
+
 }
 
 

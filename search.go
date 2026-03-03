@@ -33,17 +33,18 @@ type QueryPerformance struct {
 }
 
 type SearchHit struct {
-	Book_Url         string
-	Chapter_Url      string
-	Title            string
-	Chapter          int
-	Author           string
-	Summary          string
-	Excerpt          string
-	Rank             float32
-	Total_Count      int `json:"-"`
-	Blacklisted      bool
-	Blacklist_Reason string
+	Book_Url             string
+	Chapter_Url          string
+	Title                string
+	Chapter              int
+	Author               string
+	Summary              string
+	Excerpt              string
+	Rank                 float32
+	Total_Count          int `json:"-"`
+	Blacklisted          bool
+	Blacklist_Reason     string
+	Blacklist_Created_at time.Time
 }
 
 type Query struct {
@@ -88,7 +89,8 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 				   rank                  as rank,
 				   count(*) over () as total_count,
 				   reason is not NULL    as blacklisted,
-				   coalesce(reason, '')  as blacklist_reason
+				   coalesce(reason, '')  as blacklist_reason,
+				   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at
 			-- select chapter_ranks.book_id, title, chapter, rank
 			from (select distinct on (book_id) book_id,
 											   chapter_title,
@@ -106,7 +108,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 				 ) as chapter_ranks
 					 join books on chapter_ranks.book_id = books.id
 					 left join blacklist on chapter_ranks.book_id = blacklist.book_id
-			order by rank desc limit $2 offset $3`,
+			where blacklist.shadow is not true order by rank desc limit $2 offset $3`,
 		query.query, query.limit, query.offset)
 
 	queryPerformance.EndTime = int64(time.Now().UnixNano())

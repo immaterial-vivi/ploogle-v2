@@ -6,7 +6,14 @@
 
 <main>
     <div>
-        <h1>{page.error.message}</h1>
+        <h1>{page.status} - {page.error.message}</h1>
+        {#if page.status === 404}
+            All the bunnies have hopped away!
+        {:else if page.status > 499}
+            Bunnies have gotten to the wires!
+        {:else}
+            Something went wrong!
+        {/if}
         <p>
             <a href={resolve("/")}>Back to home page</a>
         </p>

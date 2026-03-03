@@ -2,7 +2,7 @@
 
     import romLogo from '$lib/assets/rom-icon.png';
     import ao3Logo from '$lib/assets/ao3-icon.png';
-    import { resolve } from '$app/paths';
+
     const {result} = $props();
 
     const chapterUrl = () => getChapterUrl(result)
@@ -26,21 +26,32 @@
     }
 
 </script>
+    <section class="card {result.Blacklisted ? 'blacklisted': ''}">
+        <span class="sr-only">⮦</span>
+        <a aria-hidden="true" class="result-header" href={chapterUrl()} target="_blank"
+           rel="noopener noreferrer">
+            <img class="source-icon" alt="{selectIconForUrl(result).n}-icon" src={selectIconForUrl(result).l}/>
+            <span class="font-boring smol url-hint">{shortChapterUrl()}</span>
+        </a>
+        <a href={chapterUrl()} target="_blank" rel="noopener noreferrer">
+            <h2>{result.Title}{result.Chapter ? `, Chapter ${result.Chapter}` : ''}</h2></a
+        >
+        {#if result.Blacklisted}
+        <span class="blacklist-reason">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
+            </svg>
+            {result.Blacklist_Reason}</span>
+        {:else}
 
-<section class="card">
-    <span class="sr-only">⮦</span><a aria-hidden="true" class="result-header" href={resolve(chapterUrl())} target="_blank" rel="noopener noreferrer">
-        <img class="source-icon" alt="{selectIconForUrl(result).n}-icon" src={selectIconForUrl(result).l} />
-        <span class="font-boring smol url-hint">{shortChapterUrl()}</span>
-    </a>
-    <a href={chapterUrl()} target="_blank" rel="noopener noreferrer">
-        <h2>{result.Title}{result.Chapter ? `, Chapter ${result.Chapter}` : ''}</h2></a
-    >
-    <span class="author font-boring">{result.Author}</span>
-    <p class="summary"><span class="sr-only">Summary: &nbsp; </span>{result.Summary}</p>
-    <span class="sr-only">Most relevant section:</span>
-    <blockquote class="excerpt">[...]{@html result.Excerpt}[...]</blockquote>
-</section>
-
+            <span class="author font-boring">{result.Author}</span>
+            <p class="summary"><span class="sr-only">Summary: &nbsp; </span>{result.Summary}</p>
+            <span class="sr-only">Most relevant section:</span>
+            <blockquote class="excerpt">[...]{@html result.Excerpt}[...]</blockquote>
+        {/if}
+    </section>
 <style>
 
     h2 {
@@ -87,6 +98,25 @@
         border-radius: 0.5rem;
     }
 
+    .blacklisted {
+        filter: grayscale(1);
+        font-size: smaller;
+
+        > a > h2 {
+            font-size: 1rem !important;
+        }
+    }
+
+    .blacklist-reason {
+        display: flex;
+        flex-direction: row;
+        gap: .5rem;
+        align-items: center;
+
+        > * {
+            height: 1.5rem;
+        }
+    }
 
     .author {
     }
@@ -144,6 +174,7 @@
         .card {
             padding: 0 1rem;
         }
+
         .url-hint {
             display: block;
         }

@@ -4,8 +4,15 @@
     import ResultCard from '$lib/components/result-card.svelte';
     import HeaderSearchForm from '$lib/components/header-search-form.svelte';
     import type {PageProps} from './$types';
+    import {page} from "$app/state";
 
     let {data}: PageProps = $props();
+
+    function hasHiddenItems() {
+        const hasHidden = data.message.Hits.some(v => v.Blacklisted)
+        console.log("has hidden items:",hasHidden)
+        return hasHidden
+    }
 </script>
 
 <header class="header ">
@@ -24,11 +31,22 @@
 
         <ol class="results-list">
             {#each data.message.Hits as hit}
-                <li class="results-item">
-                    <ResultCard result={hit}/>
-                </li>
+                {#if !hit.Blacklisted || data.showHidden}
+                    <li class="results-item">
+                        <ResultCard result={hit}/>
+                    </li>
+                {/if}
             {/each}
         </ol>
+        {#if hasHiddenItems() && !data.showHidden}
+            <form method="post" action="?/showHidden" class="show-hidden-form">
+                <span> Some results were skipped</span>
+                <input type="hidden" name="target" value={page.url} />
+                <input type="submit" id="showHidden" value="Show skipped results" />
+            </form>
+        {/if}
+
+
         <Pagination
                 baseUrl={`/search?q=${data.message.Query}`}
                 pageParamName={'p'}
@@ -36,6 +54,8 @@
                 pageNr={data.message.Page.Page}
         />
     </div>
+
+
 </main>
 <Footer/>
 
@@ -111,7 +131,7 @@
     }
 
 
-    .results-list {
+    .results-list{
         padding-bottom: 2rem;
     }
 
@@ -150,6 +170,38 @@
     .results-list > *:not(:last-child) {
         position: relative;
         padding-bottom: 2rem;
+    }
+
+    .show-hidden-form {
+        display:flex;
+        flex-direction: column;
+        max-width: 30rem;
+        margin: 0 auto;
+        padding: 1rem 1rem 1rem 1rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--a-blue-low);
+        border-radius: 1rem 1rem 0 1rem;
+        background-color: var(--space-blue-low);
+        gap: .75rem;
+        position: relative;
+        &::after {
+            content: " ";
+            position: absolute;
+            right: 1rem;
+            height: 40px;
+            width: 40px;
+            background: url("/img/info.svg") no-repeat center center  / 32px 32px;
+
+        }
+        &> input {
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: rgba(from white r g b / 0.4);
+        }
+
     }
 
     .wiki-link::before {
