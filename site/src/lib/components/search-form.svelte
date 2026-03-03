@@ -68,7 +68,7 @@
 
 <style>
     form {
-        max-width: 600px;
+        /*max-width: 600px;*/
         margin: 0 auto;
     }
     #form-input {
@@ -77,7 +77,7 @@
         align-items: center;
         justify-content: center;
         /*background: #1aa179;*/
-        background: rgba(250 250 250 /  0.05);
+        background: rgba(250 250 250 /  0.1);
         border-radius: 0.25rem;
         backdrop-filter: blur(20px);
         box-shadow: inset 0px 2px 2px 0px rgba(0 0 0 /.15), 0px 4px 4px 4px rgba(0 0 0 /.1);
@@ -93,8 +93,8 @@
         position: relative;
         border: none;
         background: none;
-        font-size: 1.25rem;
         width: 100%;
+        font-size: 1.25rem;
         color: var(--a-yellow);
         margin: 0.5rem 0.5rem 0.5rem 1.5rem;
     }
@@ -148,7 +148,8 @@
         display: flex;
         flex-direction: column-reverse;
         grid-template-columns: 1fr;
-
+        max-width: 600px;
+        margin: 0 auto;
         gap: 2rem;
         padding: 2rem 0;
     }
@@ -157,6 +158,11 @@
         #form-actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
+        }
+
+        input[type=text] {
+            width: 600px;
+            font-size: 2rem;
         }
     }
 
@@ -190,6 +196,7 @@
 
         }
     }
+
 
 
 </style>

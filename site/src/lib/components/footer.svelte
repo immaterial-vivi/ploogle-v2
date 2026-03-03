@@ -40,7 +40,7 @@
 <style>
 
     .footer {
-        background: url("/img/footer.gif") no-repeat 0 0  / cover;
+        background: url("/img/footer.gif") center center / 1920px 180px;
         width: 100%;
         border-top: 1px var(--affini-pink-main) solid;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;

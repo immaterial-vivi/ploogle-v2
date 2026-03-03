@@ -29,23 +29,20 @@ export const load: PageServerLoad = async ({url}) => {
         error(500, responseData.status ?? "the server returned an empty response");
     }
 
-    const {status, message} = responseData;
-
-    console.log("beeep:", showHidden)
-    return {status, message, showHidden: showHidden};
+    return {...responseData, showHidden: showHidden};
 }
 
 export const actions = {
     search: search,
     plucky: plucky,
     showHidden: async (event) => {
-
         const data = await event.request.formData();
+        const target = (data.get("target") ?? "") as string;
 
-        const target = encodeURI(data.get("target") ?? "");
+        if (new URL(target).hostname !== event.url.hostname) {
+            error(500, `Something has gone wrong`);
+        }
 
-        console.log("hello, general kenobi", target)
-
-        redirect(302, `${target}&show-hidden`);
+        redirect(302, `${encodeURI(target)}&show-hidden`);
     }
 } satisfies Actions;

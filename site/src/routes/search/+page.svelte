@@ -10,7 +10,7 @@
 
     function hasHiddenItems() {
         const hasHidden = data.message.Hits.some(v => v.Blacklisted)
-        console.log("has hidden items:",hasHidden)
+        console.log("has hidden items:", hasHidden)
         return hasHidden
     }
 </script>
@@ -41,8 +41,8 @@
         {#if hasHiddenItems() && !data.showHidden}
             <form method="post" action="?/showHidden" class="show-hidden-form">
                 <span> Some results were skipped</span>
-                <input type="hidden" name="target" value={page.url} />
-                <input type="submit" id="showHidden" value="Show skipped results" />
+                <input type="hidden" name="target" value={page.url}/>
+                <input type="submit" id="showHidden" value="Show skipped results"/>
             </form>
         {/if}
 
@@ -97,8 +97,9 @@
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
+
         & > * {
-            padding:  1rem 0;
+            padding: 1rem 0;
         }
     }
 
@@ -131,7 +132,7 @@
     }
 
 
-    .results-list{
+    .results-list {
         padding-bottom: 2rem;
     }
 
@@ -173,7 +174,7 @@
     }
 
     .show-hidden-form {
-        display:flex;
+        display: flex;
         flex-direction: column;
         max-width: 30rem;
         margin: 0 auto;
@@ -184,6 +185,7 @@
         background-color: var(--space-blue-low);
         gap: .75rem;
         position: relative;
+
         &::after {
             content: " ";
             position: absolute;
@@ -191,9 +193,9 @@
             height: 40px;
             width: 40px;
             background: url("/img/info.svg") no-repeat center center  / 32px 32px;
-
         }
-        &> input {
+
+        & > input {
             border: none;
             background: none;
             text-align: left;
@@ -207,22 +209,24 @@
     .wiki-link::before {
         content: "";
         position: absolute;
-        top:   0;
+        top: 0;
         left: -2rem;
         width: 2rem;
         bottom: 0;
         background: url("/img/favicon.svg") no-repeat center center / contain;
     }
+
     .wiki-link {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        margin: 0 ;
+        margin: 0;
         max-width: 20rem;
-        color: rgba(0 0 0 / 0 );
+        color: rgba(0 0 0 / 0);
         text-decoration: underline rgba(255 255 255 / 0);
         transition: text-decoration-color 100ms;
+
         &:hover {
             text-decoration: underline rgba(255 255 255 / 1);
         }
@@ -232,14 +236,16 @@
 
         .header-content {
             flex-direction: row;
+
             & > * {
-                padding:  unset;
+                padding: unset;
             }
         }
 
         .container {
             padding: 1rem 1rem;
         }
+
         .wiki-link {
             position: relative;
             color: var(--a-yellow);
