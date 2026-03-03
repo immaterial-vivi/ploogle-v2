@@ -11,6 +11,10 @@ export const search = async (event:any) => {
     console.log(data)
     console.log("search", query)
 
+    if (!query) {
+        return
+    }
+
     redirect(303, `/search?q=${query}`);
     // console.log("search", event)
 }
