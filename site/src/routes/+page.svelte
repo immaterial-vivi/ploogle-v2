@@ -21,7 +21,7 @@
         <SearchForm/>
     </main>
     <section id="faq">
-        <ol>
+        <ul>
             <h2>FAQ</h2>
             <li>
                 <details >
@@ -86,7 +86,7 @@
                 </details>
             </li>
 
-        </ol>
+        </ul>
 
     </section>
 
@@ -176,12 +176,12 @@
         flex-direction: column;
         justify-content: center;
         margin: 0 auto;
-        & > ol {
+        & > ul {
             list-style: none;
         }
     }
 
-    #faq > ol {
+    #faq > ul {
         max-width: 40rem;
         width: 100%;
         margin: 0 auto;

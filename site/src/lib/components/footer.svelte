@@ -1,8 +1,14 @@
 <script>
     import SocialIcons from '@rodneylab/svelte-social-icons';
+    import ABunny from '$lib/components/a-bunny.svelte';
 </script>
 
 <footer class="footer">
+
+    <div class="hophophop">
+
+    <ABunny/>
+    </div>
 
     <div class="container">
         <section>
@@ -41,17 +47,14 @@
         position: relative;
     }
 
-    .footer::before {
-        content: "";
-        display: block;
+    .hophophop {
         position: absolute;
         top: -50px;
         right: 12px;
         width: 64px;
         height: 50px;
-        background: url("/img/bnuy.svg") no-repeat 0 0 / 64px 64px;
+        clip-path: polygon(0 0, 80% 0, 100% 100%, 0 100%);
     }
-
 
     .container {
         position: relative;

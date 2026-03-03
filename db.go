@@ -142,7 +142,7 @@ func fillDB(dbpool *pgxpool.Pool) {
 func GetRandomBookUrl(dbpool *pgxpool.Pool) (string, error) {
 	var url string
 
-	err := dbpool.QueryRow(context.Background(), "select url from books where url like $1 order by rand() limit 1").Scan(&url)
+	err := dbpool.QueryRow(context.Background(), "select url from books order by random() limit 1").Scan(&url)
 	return url, err
 }
 
