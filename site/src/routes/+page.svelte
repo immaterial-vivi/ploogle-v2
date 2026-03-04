@@ -191,7 +191,7 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
-        min-height: calc(max(100vh,750px) - 7.05rem);
+        min-height: calc(max(100svh,750px) - 7.05rem);
         /*background: url("/img/banner.gif") center center / cover  ;*/
         background: var(--content-bg);
 
@@ -224,11 +224,13 @@
     #faq {
         background: var(--content-bg);
         width: 100%;
+        min-height: 100svh;
         max-width: var(--content-width);
         padding: 3rem 1rem;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        align-items: start;
+        justify-content: start;
         margin: 0 auto;
         & > ul {
             list-style: none;
