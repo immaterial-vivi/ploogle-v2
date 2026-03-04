@@ -13,8 +13,7 @@
 {@render children()}
 
 <style>
-	body :global{
-
+	body {
 	}
 
 </style>

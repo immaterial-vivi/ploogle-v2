@@ -46,7 +46,10 @@
             {result.Blacklist_Reason}</span>
         {:else}
 
-            <span class="author font-boring">{result.Author}</span>
+            <span class="author font-boring">
+                <span class="sr-only">by</span>
+                {result.Author}
+            </span>
             <p class="summary"><span class="sr-only">Summary: &nbsp; </span>{result.Summary}</p>
             <span class="sr-only">Most relevant section:</span>
             <blockquote class="excerpt">[...]{@html result.Excerpt}[...]</blockquote>
@@ -137,12 +140,15 @@
         color: lightgray;
         position: relative;
         margin-inline-start: .5rem;
-        border-inline-start: 2px solid var(--a-light-blue);
+        border-inline-start: 2px solid rgba( 0 0 0/ 0 );
         z-index: 2;
         padding-block: .5rem;
         padding-inline: 1rem 1rem;
-        border-radius: 0 1rem 0 0;
+        border-radius: 0 0 1rem 0;
+        corner-shape: bevel;
         background: oklch(from var(--a-light-blue) l c h / 0.1);
+        clip: unset;
+        /*clip-path: polygon(120% -10%, 120% calc(100% - 16px), calc(100% - 16px) 100%, -10% 100%, -10% -10%);*/
     }
 
     .excerpt::before {
@@ -152,8 +158,20 @@
         top: 0;
         bottom: 0;
         background: var(--a-light-blue);
+        clip-path: polygon(5px 0%, 100% 0%, 100% 100%, 0% 100%, 0% 7px);
         width: 5px;
-        border-radius: 10px 0 0 10px;
+        /*border-radius: 10px 0 0 10px;*/
+    }
+
+    .excerpt::after {
+        content: '';
+        position: absolute;
+        right: -5px;
+        top: -10px;
+        background: url("/img/quotation-marks.svg") no-repeat center center / contain;
+        width: 30px;
+        height: 30px;
+        /*border-radius: 10px 0 0 10px;*/
     }
 
     /*.excerpt::after {*/

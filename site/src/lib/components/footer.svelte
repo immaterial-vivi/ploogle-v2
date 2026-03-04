@@ -58,7 +58,7 @@
 
     .container {
         position: relative;
-        max-width: 1200px;
+        max-width: var(--content-width);
         display: grid;
         grid-template-columns: 1fr;
         align-items: top;

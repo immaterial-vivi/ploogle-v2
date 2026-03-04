@@ -15,50 +15,62 @@
     }
 </script>
 
-<header class="header ">
-    <a href="#main-content" class="sr-only skip-link">skip to search results</a>
-    <div class="header-content container">
-        <a href="/" class="logo">Ploogle</a>
-        <HeaderSearchForm query={data.message.Query}/>
-        <a href="https://humandomestication.guide" class="wiki-link font-boring">back to hd.g</a>
-    </div>
-</header>
+<div class="height-container">
+    <header class="header ">
+        <a href="#main-content" class="sr-only skip-link">skip to search results</a>
+        <div class="header-content container">
+            <a href="/" class="logo logo-hover interactive">Ploogle</a>
+            <HeaderSearchForm query={data.message.Query}/>
+            <a href="https://humandomestication.guide" class="wiki-link font-boring phone-hidden">back to hd.g</a>
+        </div>
+    </header>
 
-<main class="main-content" id="#main-content">
-    <div class="container content">
+    <main class="main-content" id="#main-content">
+        <div class="container content">
         <span class="results-count">found {data.message.Page.Results}
             results in {(data.message.Performance.DeltaTime / 1e9).toFixed(3)} s </span>
 
-        <ol class="results-list">
-            {#each data.message.Hits as hit}
-                {#if !hit.Blacklisted || data.showHidden}
-                    <li class="results-item">
-                        <ResultCard result={hit}/>
-                    </li>
-                {/if}
-            {/each}
-        </ol>
-        {#if hasHiddenItems() && !data.showHidden}
-            <form method="post" action="?/showHidden" class="show-hidden-form">
-                <span> Some results were skipped</span>
-                <input type="hidden" name="target" value={page.url}/>
-                <input type="submit" id="showHidden" value="Show skipped results"/>
-            </form>
-        {/if}
+            <ol class="results-list">
+                {#each data.message.Hits as hit}
+                    {#if !hit.Blacklisted || data.showHidden}
+                        <li class="results-item">
+                            <ResultCard result={hit}/>
+                        </li>
+                    {/if}
+                {/each}
+            </ol>
+            {#if hasHiddenItems() && !data.showHidden}
+                <form method="post" action="?/showHidden" class="show-hidden-form">
+                    <span> Some results were skipped</span>
+                    <input type="hidden" name="target" value={page.url}/>
+                    <input type="submit" id="showHidden" value="Show skipped results"/>
+                </form>
+            {/if}
+
+            {#if data.message.Hits.length == 0}
+                <section>
+                    <h2>
+                        No results found
+                    </h2>
+
+                    <span>
+                        maybe you should write something about <em>{data.message.Query}</em> :3
+                    </span>
+                </section>
+            {/if}
+
+            <Pagination
+                    baseUrl={`/search?q=${data.message.Query}`}
+                    pageParamName={'p'}
+                    totalPages={data.message.Page.Pages}
+                    pageNr={data.message.Page.Page}
+            />
+        </div>
 
 
-        <Pagination
-                baseUrl={`/search?q=${data.message.Query}`}
-                pageParamName={'p'}
-                totalPages={data.message.Page.Pages}
-                pageNr={data.message.Page.Page}
-        />
-    </div>
-
-
-</main>
-<Footer/>
-
+    </main>
+    <Footer/>
+</div>
 <style>
     ol {
         display: flex;
@@ -68,21 +80,6 @@
         padding-bottom: 1rem;
     }
 
-    .logo {
-        text-decoration: none;
-        cursor: pointer;
-        font-family: Fugaz One, sans, sans-serif;
-        font-weight: bold;
-        font-size: 2rem;
-        color: var(--affini-pink-main);
-        transition: all 0.2s;
-
-        &:hover {
-            text-decoration: underline;
-            color: white;
-
-        }
-    }
 
     .header {
         background: url("/img/banner.gif");
@@ -103,16 +100,22 @@
         }
     }
 
+
+    h2 {
+        padding-bottom: 1rem;
+    }
+
     .main-content {
         position: relative;
         z-index: 0;
     }
 
     .container {
-        max-width: 1200px;
+        max-width: var(--content-width);
         margin: 0 auto;
         padding: 1rem 1rem 3rem 1rem;
         width: 100%;
+        height: 100%;
     }
 
     .content {
@@ -206,33 +209,15 @@
 
     }
 
-    .wiki-link::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -2rem;
-        width: 2rem;
-        bottom: 0;
-        background: url("/img/favicon.svg") no-repeat center center / contain;
-    }
-
-    .wiki-link {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        margin: 0;
-        max-width: 20rem;
-        color: rgba(0 0 0 / 0);
-        text-decoration: underline rgba(255 255 255 / 0);
-        transition: text-decoration-color 100ms;
-
-        &:hover {
-            text-decoration: underline rgba(255 255 255 / 1);
-        }
-    }
 
     @media screen and (min-width: 768px) {
+        .height-container {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            justify-items: stretch;
+            width: 100%;
+            min-height: 100svh;
+        }
 
         .header-content {
             flex-direction: row;
@@ -246,12 +231,7 @@
             padding: 1rem 1rem;
         }
 
-        .wiki-link {
-            position: relative;
-            color: var(--a-yellow);
-            width: unset;
 
-        }
     }
 
 </style>

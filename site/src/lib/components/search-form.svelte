@@ -10,7 +10,7 @@
 
         <label>
             <span class="sr-only">search query</span>
-            <input name="query" type="text" value={query} placeholder="Search..."/>
+            <input name="query" type="text" value={query} placeholder="Search for HDG stories..."/>
         </label>
 
         <button type="submit" id="submit" class="search-button">
@@ -97,6 +97,11 @@
         font-size: 1.25rem;
         color: var(--a-yellow);
         margin: 0.5rem 0.5rem 0.5rem 1.5rem;
+        &::placeholder {
+            color: rgba(from var(--a-yellow) r g b / 0.5);
+            font-size: 1.25rem;
+
+        }
     }
 
     input[type=text]:focus {
@@ -162,7 +167,8 @@
 
         input[type=text] {
             width: 600px;
-            font-size: 2rem;
+            min-height: 2.5rem;
+            font-size: 1.25rem;
         }
     }
 
@@ -171,7 +177,7 @@
         display: grid;
         grid-template-columns: auto 1fr;
         border-radius: 4px;
-        font-size: large;
+        font-size: larger;
         padding: 0.75rem 1rem;
         gap: .5rem;
         cursor: pointer;
@@ -197,6 +203,8 @@
         }
     }
 
-
+    /*.search-button {*/
+    /*    opacity: 0.0;*/
+    /*}*/
 
 </style>

@@ -8,14 +8,9 @@
     color-scheme: only dark;
 
     --content-bg: rgba(from var(--space-blue-low) r g b / 0.95);
-
+    --content-width: 1200px;
 }
 
-@media screen and (min-width: 1024px) {
-    :root {
-        font-size: 14pt;
-    }
-}
 
 @font-face {
     font-display: auto;
@@ -74,7 +69,6 @@
 }
 
 body {
-
     font-family: "Playpen Sans", sans-serif;
     min-height: 100vh;
     display: flex;
@@ -86,8 +80,71 @@ body {
 
 }
 
-
 em {
     font-weight: bold;
     color: oklab(from var(--a-yellow) 10 a b / 1);
 }
+
+.logo {
+    text-decoration: none;
+    font-family: Fugaz One, sans, sans-serif;
+    font-weight: bold;
+    font-size: 2rem;
+    color: var(--affini-pink-main);
+    transition: all 0.2s;
+}
+
+.interactive {
+    cursor: pointer;
+
+}
+
+.logo-hover:hover {
+    text-decoration: underline;
+    color: white;
+
+}
+
+.wiki-link::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -2rem;
+    width: 2rem;
+    bottom: 0;
+    background: url("/img/favicon.svg") no-repeat center center / contain;
+}
+
+.wiki-link {
+    position: relative;
+    color: var(--a-yellow);
+    text-decoration: underline rgba(255 255 255 / 0);
+    transition: text-decoration-color 100ms;
+
+    &:hover {
+        text-decoration: underline rgba(255 255 255 / 1);
+        filter: grayscale(100%) brightness(1000%);
+
+    }
+}
+
+.phone-hidden {
+    display: none;
+}
+
+@media screen and (min-width: 768px) {
+    .wiki-link {
+        position: relative;
+        color: var(--a-yellow);
+        width: unset;
+    }
+    .phone-hidden {
+        display: block;
+    }
+}
+@media screen and (min-width: 1024px) {
+    :root {
+        font-size: 14pt;
+    }
+}
+

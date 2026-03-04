@@ -4,21 +4,32 @@
 
     import Flort from '$lib/components/flort.svelte';
     import Footer from '$lib/components/footer.svelte';
+    // import GuideFavicon from '$lib/assets/favicon.svg'
 </script>
 
 <div class="container">
     <!--    <FlashMessage>-->
     <!--            Welcome to the new Ploogle! <br> Read all about it <a href="#" target="_blank" rel="nofollow">here!</a>-->
     <!--    </FlashMessage>-->
+
     <main id="search">
-        <div class="heading-container">
-            <h1 class="heading">Ploogle</h1>
+
+        <section class="header">
+            <h1 class="logo ">Ploogle</h1>
+            <a href="https://humandomestication.guide" class="wiki-link header-guide-link ">back to hd.g</a>
+        </section>
+
+        <div class="search-container">
             <Flort/>
             <p class="sr-only">
                 Ploogle - Search for <a href="https://humandomestication.guide/">HDG Stories</a>
             </p>
         </div>
         <SearchForm/>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="scroll-hint">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+        </svg>
+
     </main>
     <section id="faq">
         <ul>
@@ -90,9 +101,6 @@
 
     </section>
 
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="scroll-hint">
-        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
-    </svg>
 
 
     <Footer/>
@@ -100,7 +108,7 @@
 
 <style>
 
-    .heading-container {
+    .search-container {
         /*max-width: 1200px;*/
         width: 100%;
         display: flex;
@@ -108,19 +116,41 @@
         padding: 0rem;
     }
 
+    .header {
+        width: 100%;
+        max-width: var(--content-width);
+        --bg-color: var(--affini-pink-main);
+        /*background: linear-gradient(-90deg, oklch(from var(--bg-color) l c -15deg) 0%, var(--bg-color) 100%);*/
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        flex-direction: row;
+        align-items: center;
+
+        height: min-content;
+        justify-content: space-between;
+        padding: 2rem 1rem;
+        margin: 0 auto;
+        > .logo {
+            grid-column: 1/3;
+            text-align: left;
+
+        }
+        > .wiki-link {
+
+            justify-self: end;
+        }
+    }
+
+
     .heading {
         font-family: Fugaz One, sans, sans-serif;
         font-size: 3rem;
+        color: var(--affini-pink-main);
         /*text-shadow: #DA1C5C 1px 1px 1px;*/
         margin: 0 auto;
         text-align: center;
-        background-color: var(--affini-pink-main);
-        width: 100%;
-        --bg-color: var(--affini-pink-main);
-    display: none;
-        background: linear-gradient(-90deg, oklch(from var(--bg-color) l c -15deg) 0%, var(--bg-color) 100%);
-
     }
+
 
     h2 {
         --bg-color: var(--affini-pink-main);
@@ -153,8 +183,8 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
-        min-height: calc(100vh - 1px);
-        background: url("/img/banner.gif") center center ;
+        min-height: max(calc(100vh - 1px), 750px);
+        background: url("/img/banner.gif") center center / cover  ;
         width: 100%;
         position: relative;
         border-bottom: 1px solid var(--affini-pink-main);
@@ -171,12 +201,20 @@
         margin: 0 auto;
         color: var(--affini-pink-main);
     }
+    @media screen and (max-height: 750px) {
+        .header {
+            padding: .5rem 1rem;
+        }
+        .scroll-hint {
+            display: none;
+        }
+    }
 
 
     #faq {
         background: var(--content-bg);
         width: 100%;
-        max-width: 1200px;
+        max-width: var(--content-width);
         padding: 3rem 1rem;
         display: flex;
         flex-direction: column;
@@ -269,11 +307,19 @@
             padding: 0.25rem 4.75rem 0.25rem 4.5rem;
         }
 
-        .heading-container {
+        .search-container {
             padding: 4rem 4rem 2rem 4rem;
         }
         #faq > ol {
             padding-block: 2rem 4rem;
         }
     }
+
+    @media screen and (min-width: 1400px) {
+        .header {
+            max-width: var(--content-width);
+        }
+    }
+
+
 </style>
