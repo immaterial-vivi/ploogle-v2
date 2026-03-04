@@ -11,13 +11,16 @@
     <!--    <FlashMessage>-->
     <!--            Welcome to the new Ploogle! <br> Read all about it <a href="#" target="_blank" rel="nofollow">here!</a>-->
     <!--    </FlashMessage>-->
-
-    <main id="search">
-
+    <div class="header-container">
         <section class="header">
             <h1 class="logo ">Ploogle</h1>
             <a href="https://humandomestication.guide" class="wiki-link header-guide-link ">back to hd.g</a>
         </section>
+    </div>
+
+
+    <main id="search">
+
 
         <div class="search-container">
             <Flort/>
@@ -116,15 +119,21 @@
         padding: 0rem;
     }
 
-    .header {
-        width: 100%;
-        max-width: var(--content-width);
+    .header-container {
         --bg-color: var(--affini-pink-main);
         /*background: linear-gradient(-90deg, oklch(from var(--bg-color) l c -15deg) 0%, var(--bg-color) 100%);*/
+        background: url("/img/banner.gif");
+        border-bottom: 1px solid var(--affini-pink-main);
+
+    }
+
+    .header {
+        max-width: var(--content-width);
+
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        flex-direction: row;
         align-items: center;
+        width: 100%;
 
         height: min-content;
         justify-content: space-between;
@@ -140,7 +149,6 @@
             justify-self: end;
         }
     }
-
 
     .heading {
         font-family: Fugaz One, sans, sans-serif;
@@ -183,8 +191,10 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
-        min-height: max(calc(100vh - 1px), 750px);
-        background: url("/img/banner.gif") center center / cover  ;
+        min-height: calc(max(100vh,750px) - 7.05rem);
+        /*background: url("/img/banner.gif") center center / cover  ;*/
+        background: var(--content-bg);
+
         width: 100%;
         position: relative;
         border-bottom: 1px solid var(--affini-pink-main);
@@ -317,7 +327,7 @@
 
     @media screen and (min-width: 1400px) {
         .header {
-            max-width: var(--content-width);
+            /*max-width: var(--content-width);*/
         }
     }
 
