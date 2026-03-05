@@ -35,7 +35,7 @@ func main() {
 	shouldRecrawlPtr := flag.Bool("c", false, "crawl ao3")
 
 	queryPtr := flag.String("q", "", "search for this")
-	pagePtr := flag.Int("p", 0, "page")
+	pagePtr := flag.Int("p", 20, "page")
 	pageSize, err := strconv.Atoi(os.Getenv("PLOOGLE_PAGE_SIZE"))
 
 	//debug things
