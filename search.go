@@ -68,6 +68,8 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	log.Println("searching", query.query)
 
+	log.Println(query)
+
 	var result QueryResult
 
 	var queryPerformance QueryPerformance
