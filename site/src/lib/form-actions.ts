@@ -26,7 +26,7 @@ export const plucky = async (event:any) => {
     const query = encodeURI(data.get("query"))
 
 
-    const res = await fetch(`${PLOOGLE_API_URL}/api/v2/plucky?q=${query}`, { headers: { "Accept": "application/json", "x-ploogle-api-key": PLOOGLE_API_KEY } });
+    const res = await fetch(`${PLOOGLE_API_URL}/api/v2/plucky?q=${query}`, { headers: { "Accept": "application/json", "Authorization": PLOOGLE_API_KEY } });
 
     if (res.status >= 400) {
         error(res.status, res.statusText);

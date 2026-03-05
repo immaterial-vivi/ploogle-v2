@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({url}) => {
     const res = await fetch(`${PLOOGLE_API_URL}/api/v2//search?q=${q}&p=${p || 1}`, {
         headers: {
             "Accept": "application/json",
-            "x-ploogle-api-key": PLOOGLE_API_KEY
+            "Authorization": PLOOGLE_API_KEY
         }
     });
 
