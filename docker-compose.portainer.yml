@@ -11,19 +11,12 @@ services:
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - ../postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "ploogle"]
-      interval: 30s
-      timeout: 60s
-      retries: 5
-      start_period: 80s
 
   app:
-    build:
-      context: .
+    build: https://github:com/immaterial-vivi/ploogle-v2
     container_name: ploogle_api
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -40,18 +33,5 @@ services:
 
     depends_on:
       postgres:
-        condition: service_healthy
-
-  frontend:
-    build:
-      context: ./site
-    container_name: ploogle_frontend
-    environment:
-      PLOOGLE_API_KEY: ${PLOOGLE_API_KEY}
-      PLOOGLE_HOST: ploogle_api:${PORT}
-    ports:
-      - "3000:3000"
-
-    depends_on:
-      app:
         condition: service_started
+

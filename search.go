@@ -116,7 +116,6 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	var err error
 	result.Hits, err = pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
-
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +126,9 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	result.Performance = queryPerformance
 	result.TsQuery = tsquery
 	result.Query = query.query
+
+	log.Println("searched:", query.query)
+	log.Println("num found:", len(result.Hits))
 
 	return &result, nil
 
