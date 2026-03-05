@@ -81,7 +81,7 @@ func main() {
 	}
 
 	// reload books from disk
-	if *shouldLoadDbPtr || true {
+	if *shouldLoadDbPtr {
 		fillDB(dbpool)
 	}
 
