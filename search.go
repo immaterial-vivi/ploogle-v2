@@ -73,7 +73,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	var queryPerformance QueryPerformance
 	queryPerformance.StartTime = int64(time.Now().UnixNano())
 
-	rows, _ := dbpool.Query(
+	rows, err := dbpool.Query(
 		context.Background(),
 		`select books.url            as book_url,
 				   chapter_ranks.url     as chapter_url,
@@ -111,15 +111,18 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 			where blacklist.shadow is not true order by rank desc limit $2 offset $3`,
 		query.query, query.limit, query.offset)
 
-	queryPerformance.EndTime = int64(time.Now().UnixNano())
-	queryPerformance.DeltaTime = queryPerformance.EndTime - queryPerformance.StartTime
-
-	var err error
+	if err != nil {
+		log.Println("error getting rows from database:", err)
+		return nil, err
+	}
 	result.Hits, err = pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
 	if err != nil {
 		log.Println("error getting rows from database:", err)
 		return nil, err
 	}
+
+	queryPerformance.EndTime = int64(time.Now().UnixNano())
+	queryPerformance.DeltaTime = queryPerformance.EndTime - queryPerformance.StartTime
 
 	var tsquery string
 	err = dbpool.QueryRow(context.Background(), "select websearch_to_tsquery('english', $1);", query.query).Scan(&tsquery)
