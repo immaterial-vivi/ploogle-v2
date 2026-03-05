@@ -7,7 +7,7 @@
     --a-mid-teal: #31cbb1;
     color-scheme: only dark;
 
-    --content-bg: rgba(from var(--space-blue-low) r g b / 0.95);
+    --content-bg: rgba(from var(--space-blue-low) r g b / 0.90);
     --content-width: 1200px;
 }
 

@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({url}) => {
         error(400, "A search query is required to search")
     }
 
-    const res = await fetch(`${PLOOGLE_API_URL}/search?q=${q}&p=${p || 1}`, {
+    const res = await fetch(`${PLOOGLE_API_URL}/api/v2//search?q=${q}&p=${p || 1}`, {
         headers: {
             "Accept": "application/json",
             "x-ploogle-api-key": PLOOGLE_API_KEY

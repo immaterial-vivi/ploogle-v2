@@ -125,6 +125,13 @@ func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
 
 func fillDB(dbpool *pgxpool.Pool) {
 	booksDir := os.Getenv("BOOKS_DIR")
+	_, err := os.Stat(booksDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// fall back to default books dir
+			booksDir = "/opt/books"
+		}
+	}
 
 	entries, err := os.ReadDir(booksDir)
 	if err != nil {

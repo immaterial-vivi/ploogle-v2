@@ -8,7 +8,7 @@
 <form method="POST" action="?/search">
     <label>
         <span class="sr-only">search query</span>
-        <input name="query" type="text" value={query}/>
+        <input name="query" type="text" value={query} autocomplete="off" />
     </label>
 
     <button type="submit" id="submit" class="search-button">

@@ -2,7 +2,6 @@
     import SearchIcon from '$lib/components/search-icon.svelte';
 
     let {query = ''} = $props();
-
 </script>
 
 <form method="POST" action="?/search">
@@ -10,7 +9,7 @@
 
         <label>
             <span class="sr-only">search query</span>
-            <input name="query" type="text" value={query} placeholder="Search for HDG stories..."/>
+            <input name="query" type="text" value={query} placeholder="Search for HDG stories..." autocomplete="off" />
         </label>
 
         <button type="submit" id="submit" class="search-button">

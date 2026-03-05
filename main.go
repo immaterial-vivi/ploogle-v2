@@ -51,8 +51,10 @@ func main() {
 	databasePassword := os.Getenv("POSTGRES_PASSWORD")
 	databaseHost := os.Getenv("POSTGRES_HOST")
 	databaseDBPath := os.Getenv("POSTGRES_DB")
+	databasePort := os.Getenv("POSTGRES_PORT")
+	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", databaseUser, databasePassword, databaseHost, databasePort, databaseDBPath)
 
-	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s/%s", databaseUser, databasePassword, databaseHost, databaseDBPath)
+	log.Println(databaseUrl)
 
 	dbconfig, err := pgxpool.ParseConfig(databaseUrl)
 
@@ -74,12 +76,12 @@ func main() {
 	// -----
 
 	// apply database schema
-	if *shouldMigrateDbPtr {
+	if *shouldMigrateDbPtr || true {
 		migrate(dbpool)
 	}
 
 	// reload books from disk
-	if *shouldLoadDbPtr {
+	if *shouldLoadDbPtr || true {
 		fillDB(dbpool)
 	}
 
