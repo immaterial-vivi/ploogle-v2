@@ -37,7 +37,7 @@ func main() {
 	queryPtr := flag.String("q", "", "search for this")
 	pagePtr := flag.Int("p", 0, "page")
 	pageSize, err := strconv.Atoi(os.Getenv("PLOOGLE_PAGE_SIZE"))
-
+	pageSize = min(pageSize, 20)
 	//debug things
 	bookPathPtr := flag.String("book", "", "insert book into db")
 
