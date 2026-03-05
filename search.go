@@ -75,13 +75,13 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	rows, _ := dbpool.Query(
 		context.Background(),
-		`select books.url             as book_url,
+		`select books.url            as book_url,
 				   chapter_ranks.url     as chapter_url,
 				   title,
 				   chapter_ranks.chapter as chapter,
 				   author,
 				   books.summary         as summary,
-				   ts_headline(
+				   ts_headline(	
 						   title || ' ' || chapter_title || ' ' || chapter_text,
 						   query,
 						   'StartSel=<em>,StopSel=</em>, MaxFragments=1, MinWords=5, MaxWords=100'
@@ -117,6 +117,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	var err error
 	result.Hits, err = pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
 	if err != nil {
+		log.Println("error getting rows from database:", err)
 		return nil, err
 	}
 
