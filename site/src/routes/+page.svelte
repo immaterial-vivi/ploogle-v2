@@ -29,8 +29,9 @@
             </p>
         </div>
         <SearchForm/>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="scroll-hint">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+             class="scroll-hint">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"/>
         </svg>
 
     </main>
@@ -38,7 +39,7 @@
         <ul>
             <h2>FAQ</h2>
             <li>
-                <details >
+                <details>
                     <summary>
                         OwO What's this?
                     </summary>
@@ -47,7 +48,7 @@
             </li>
 
             <li>
-                <details >
+                <details>
                     <summary>
                         Search options
                     </summary>
@@ -55,20 +56,46 @@
                 </details>
             </li>
             <li>
-                <details >
+                <details>
                     <summary>
                         Which stories are indexed?
                     </summary>
                     <p>
                         New stories posted on AO3 under the Human Domestication Tag are picked up automatically about
-                        once
-                        per day. All #hdg stories on ReadOnlyMind.com are also indexed.
+                        once per day. All #hdg stories on ReadOnlyMind.com are also indexed.
                     </p>
                 </details>
-
             </li>
             <li>
-                <details >
+                <details>
+                    <summary>
+                        Are stories excluded from the search results?
+                    </summary>
+                    <p>
+                        Yes, under a few circumstances:
+                    <ol>
+                        <li>
+                            they aren't available anymore (though this is done by manual process, if you find a broken
+                            link let us know!)
+                        </li>
+                        <li>
+                            the author has asked for them to be removed
+                        </li>
+                        <li>
+                            they don't qualify as works per Ao3's ToS
+                        </li>
+                    </ol>
+                    However,
+                    <p>
+                        I do <em>not</em> remove stories based on taste, or interpersonal drama with the author.
+                    <p>
+                        I do <em>not</em> remove stories based on rules set by any HDG fan community.
+                    <p>
+                        Appearing in this index doesn't imply endorsement by me or the HD.G contributors.
+                </details>
+            </li>
+            <li>
+                <details>
                     <summary>
                         I found a broken link/something inappropriate!
                     </summary>
@@ -78,7 +105,7 @@
                 </details>
             </li>
             <li>
-                <details >
+                <details>
                     <summary>
                         My story doesn't show up!
                     </summary>
@@ -88,7 +115,7 @@
                 </details>
             </li>
             <li>
-                <details >
+                <details>
                     <summary>
                         Why not just use the ao3 search?
                     </summary>
@@ -103,7 +130,6 @@
         </ul>
 
     </section>
-
 
 
     <Footer/>
@@ -139,11 +165,13 @@
         justify-content: space-between;
         padding: 2rem 1rem;
         margin: 0 auto;
+
         > .logo {
             grid-column: 1/3;
             text-align: left;
 
         }
+
         > .wiki-link {
 
             justify-self: end;
@@ -191,7 +219,7 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 1rem;
-        min-height: calc(max(100svh,750px) - 7.05rem);
+        min-height: calc(max(100svh, 750px) - 7.05rem);
         /*background: url("/img/banner.gif") center center / cover  ;*/
         background: var(--content-bg);
 
@@ -211,10 +239,12 @@
         margin: 0 auto;
         color: var(--affini-pink-main);
     }
+
     @media screen and (max-height: 750px) {
         .header {
             padding: .5rem 1rem;
         }
+
         .scroll-hint {
             display: none;
         }
@@ -232,9 +262,14 @@
         align-items: start;
         justify-content: start;
         margin: 0 auto;
+
         & > ul {
             list-style: none;
         }
+    }
+
+    ol {
+        padding-inline-start: 1.2rem;
     }
 
     #faq > ul {
@@ -258,6 +293,7 @@
             grid-template-rows: 0fr;
             font-weight: 700;
             font-size: 1.15rem;
+
             + * {
                 margin-top: 0;
             }
@@ -284,6 +320,7 @@
                 border-width: 2px 2px 0px 2px;
 
                 /*background: #DA1C5C;*/
+
                 &::after {
                     content: "-";
                     /*display: flex;*/
@@ -296,7 +333,6 @@
                     /*margin: auto;*/
                 }
             }
-
 
 
             &::details-content {
@@ -322,6 +358,7 @@
         .search-container {
             padding: 4rem 4rem 2rem 4rem;
         }
+
         #faq > ol {
             padding-block: 2rem 4rem;
         }

@@ -16,32 +16,6 @@
             <SearchIcon  class="button-icon"/>
             <span class="sr-only">Search</span>
         </button>
-        <!--	<button formaction="?/plucky">I'm feeling plucky!</button>-->
-
-<!--        <div class="hint-button" tabindex="0">-->
-<!--            <svg xmlns="http://www.w3.org/2000/svg" fill="#040B20" viewBox="0 0 24 24" stroke-width="1.5"-->
-<!--                 stroke="currentColor"-->
-<!--                 class="icon" width="24" height="24">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round"-->
-<!--                      d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>-->
-<!--            </svg>-->
-<!--        </div>-->
-
-<!--        <ul class="hint">-->
-<!--            <span class="sr-only">Tips for more accurate results:</span>-->
-<!--            <li>-->
-<!--                <span>"quoted text"</span> to search for phrases-->
-<!--            </li>-->
-<!--            <li>-->
-<!--                <span>unquoted text</span> to find stories containing both 'unquoted' <em>and</em> 'text'-->
-<!--            </li>-->
-<!--            <li>-->
-<!--                put <span>OR</span> between terms to find stories containing <em>either</em> term-->
-<!--            </li>-->
-<!--            <li>-->
-<!--                <span>-word</span> exclude stories containing 'word'-->
-<!--            </li>-->
-<!--        </ul>-->
     </section>
     <section id="form-actions">
         <button id="plucky" formaction="?/plucky" type="submit" class="action-button">

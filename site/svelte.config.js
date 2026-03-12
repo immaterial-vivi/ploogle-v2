@@ -11,7 +11,7 @@ const config = {
 		adapter: selectedAdapter(),
 		csrf: {
 			checkOrigin: false,
-			trustedOrigins: ['localhost:3000', "ploogle.humandomestication.guide", "ploogle.netlify.app"],
+			trustedOrigins: ['localhost:3000', "ploogle.humandomestication.guide", "ploogle.netlify.app", "strawberry-bunny-dreams.netlify.app"],
 		}
 	},
 

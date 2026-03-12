@@ -1,4 +1,4 @@
-import {PLOOGLE_API_KEY, PLOOGLE_API_URL} from '$env/static/private';
+import {PLOOGLE_API_KEY, PLOOGLE_API_URL, PLOOGLE_AUTHORIZATION_HEADER} from '$env/static/private';
 import type {Actions, PageServerLoad} from './$types';
 import {plucky, search} from '$lib/form-actions';
 import {error, redirect} from "@sveltejs/kit";
@@ -13,11 +13,14 @@ export const load: PageServerLoad = async ({url}) => {
         error(400, "A search query is required to search")
     }
 
+    console.log(PLOOGLE_AUTHORIZATION_HEADER)
+    const headers ={
+        "Accept": "application/json",
+        [PLOOGLE_AUTHORIZATION_HEADER]: PLOOGLE_API_KEY
+    }
+    console.log(headers)
     const res = await fetch(`${PLOOGLE_API_URL}/api/v2//search?q=${q}&p=${p || 1}`, {
-        headers: {
-            "Accept": "application/json",
-            "x-ploogle-api-key": PLOOGLE_API_KEY
-        }
+        headers
     });
 
     if (res.status >= 400) {

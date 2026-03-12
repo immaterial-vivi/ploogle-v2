@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import { PLOOGLE_API_URL, PLOOGLE_API_KEY } from '$env/static/private';
+import { PLOOGLE_API_URL, PLOOGLE_API_KEY, PLOOGLE_AUTHORIZATION_HEADER } from '$env/static/private';
 import { error } from '@sveltejs/kit';
 
 export const search = async (event:any) => {
@@ -26,7 +26,7 @@ export const plucky = async (event:any) => {
     const query = encodeURI(data.get("query"))
 
 
-    const res = await fetch(`${PLOOGLE_API_URL}/api/v2/plucky?q=${query}`, { headers: { "Accept": "application/json", "x-ploogle-api-key": PLOOGLE_API_KEY } });
+    const res = await fetch(`${PLOOGLE_API_URL}/api/v2/plucky?q=${query}`, { headers: { "Accept": "application/json",  [PLOOGLE_AUTHORIZATION_HEADER]: PLOOGLE_API_KEY } });
 
     if (res.status >= 400) {
         error(res.status, res.statusText);
