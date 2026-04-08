@@ -26,14 +26,14 @@
     }
 
 </script>
-    <section class="card {result.Blacklisted ? 'blacklisted': ''}">
+    <section class="card {result.Blacklisted ? 'blacklisted': ''} {result.Direct_Title_Match ? "direct-match" :""}">
         <span class="sr-only">⮦</span>
         <a aria-hidden="true" class="result-header" href={chapterUrl()} target="_blank"
            rel="noopener noreferrer">
             <img class="source-icon" alt="{selectIconForUrl(result).n}-icon" src={selectIconForUrl(result).l}/>
             <span class="font-boring smol url-hint">{shortChapterUrl()}</span>
         </a>
-        <a href={chapterUrl()} target="_blank" rel="noopener noreferrer">
+        <a href={chapterUrl()} target="_blank" rel="noopener noreferrer" class="title">
             <h2>{result.Title}{result.Chapter ? `, Chapter ${result.Chapter}` : ''}</h2></a
         >
         {#if result.Blacklisted}
@@ -51,8 +51,10 @@
                 {result.Author}
             </span>
             <p class="summary"><span class="sr-only">Summary: &nbsp; </span>{result.Summary}</p>
+            {#if !result.Direct_Title_Match}
             <span class="sr-only">Most relevant section:</span>
             <blockquote class="excerpt">[...]{@html result.Excerpt}[...]</blockquote>
+            {/if}
         {/if}
     </section>
 <style>
@@ -188,6 +190,21 @@
     /*    display: none;*/
     /*}*/
 
+    .direct-match {
+        /*border: var(--a-yellow) solid 1px;*/
+        /*box-shadow: var(--a-yellow) 0px 0px 1px;*/
+        & .title {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        & .title::before {
+            content: "★";
+            color: var(--a-yellow);
+            font-size: larger;
+        }
+    }
+
     @media screen and (min-width: 768px) {
         .card {
             padding: 0 1rem;
@@ -197,5 +214,6 @@
             display: block;
         }
     }
+
 
 </style>

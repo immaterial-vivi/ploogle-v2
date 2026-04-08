@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"math/rand"
+	"slices"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -45,6 +46,7 @@ type SearchHit struct {
 	Blacklisted          bool
 	Blacklist_Reason     string
 	Blacklist_Created_at time.Time
+	Direct_Title_Match   bool
 }
 
 type Query struct {
@@ -64,18 +66,80 @@ func ImFeelingPlucky(query string, dbpool *pgxpool.Pool) (SearchHit, error) {
 	return hit, nil
 }
 
+func mergeHits(results []SearchHit, additionalHits []SearchHit) ([]SearchHit, int) {
+	removed := 0
+	additionalHits = slices.DeleteFunc(additionalHits, func(e SearchHit) bool {
+		for _, hit := range results {
+			if hit.Book_Url == e.Book_Url {
+				removed++
+				return true
+			}
+		}
+		return false
+	})
+	return append(results, additionalHits...), removed
+}
+
 func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	log.Println("searching", query.query)
 
-	log.Println(query)
-
 	var result QueryResult
 
 	var queryPerformance QueryPerformance
-	queryPerformance.StartTime = int64(time.Now().UnixNano())
+	queryPerformance.StartTime = time.Now().UnixNano()
 
-	rows, err := dbpool.Query(
+	// match exact titles
+	rows, err := dbpool.Query(context.Background(),
+		`select 
+    			url as book_url,
+    			'' as chapter_url,
+    			title as title,
+    			0 as chapter,
+    			author as author,
+    			summary as summary,
+    			'' as excerpt,
+    			100 as rank,
+			   count(*) over () as total_count,
+			   reason is not NULL    as blacklisted,
+			   coalesce(reason, '')  as blacklist_reason,
+			   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
+			   true as direct_title_match
+    from books
+        left join blacklist on books.id = blacklist.book_id
+    where title ilike $1
+     limit $2
+    offset $3`,
+		query.query, query.limit, query.offset)
+
+	exactTitleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+
+	// match partial titles
+	rows, err = dbpool.Query(context.Background(),
+		`select 
+    			url as book_url,
+    			'' as chapter_url,
+    			title as title,
+    			0 as chapter,
+    			author as author,
+    			summary as summary,
+    			'' as excerpt,
+    			100 as rank,
+			   count(*) over () as total_count,
+			   reason is not NULL    as blacklisted,
+			   coalesce(reason, '')  as blacklist_reason,
+			   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
+			   true as direct_title_match
+    from books
+        left join blacklist on books.id = blacklist.book_id
+    where title ilike '%' || $1 || '%' 
+     limit $2
+    offset $3`,
+		query.query, query.limit, query.offset)
+
+	titleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+
+	rows, err = dbpool.Query(
 		context.Background(),
 		`select books.url            as book_url,
 				   chapter_ranks.url     as chapter_url,
@@ -83,7 +147,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 				   chapter_ranks.chapter as chapter,
 				   author,
 				   books.summary         as summary,
-				   ts_headline(	
+				   ts_headline(
 						   title || ' ' || chapter_title || ' ' || chapter_text,
 						   query,
 						   'StartSel=<em>,StopSel=</em>, MaxFragments=1, MinWords=5, MaxWords=100'
@@ -92,7 +156,8 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 				   count(*) over () as total_count,
 				   reason is not NULL    as blacklisted,
 				   coalesce(reason, '')  as blacklist_reason,
-				   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at
+				   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
+				   false as direct_title_match
 			-- select chapter_ranks.book_id, title, chapter, rank
 			from (select distinct on (book_id) book_id,
 											   chapter_title,
@@ -101,7 +166,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 											   chapter,
 											   ts_rank_cd('{0.014925373, 0.2, 0.4, 1.0}', textsearchable_index_col, query) as rank,
 											   query
-			
+	
 				  from (select *,
 							   chapters.url as chapter_url
 						from chapters,
@@ -117,13 +182,17 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 		log.Println("error getting rows from database:", err)
 		return nil, err
 	}
-	result.Hits, err = pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+	semanticHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
 	if err != nil {
 		log.Println("error getting rows from database:", err)
 		return nil, err
 	}
 
-	queryPerformance.EndTime = int64(time.Now().UnixNano())
+	result.Hits, _ = mergeHits(result.Hits, exactTitleHits)
+	result.Hits, _ = mergeHits(result.Hits, titleHits)
+	result.Hits, _ = mergeHits(result.Hits, semanticHits)
+
+	queryPerformance.EndTime = time.Now().UnixNano()
 	queryPerformance.DeltaTime = queryPerformance.EndTime - queryPerformance.StartTime
 
 	var tsquery string

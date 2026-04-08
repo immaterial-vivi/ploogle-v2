@@ -9,6 +9,7 @@
     let {data}: PageProps = $props();
 
     function hasHiddenItems() {
+        if (data.message.Hits == null) return false
         const hasHidden = data.message.Hits.some(v => v.Blacklisted)
         console.log("has hidden items:", hasHidden)
         return hasHidden
@@ -47,7 +48,7 @@
                 </form>
             {/if}
 
-            {#if data.message.Hits.length == 0}
+            {#if data.message.Hits == null || data.message.Hits.length == 0}
                 <section>
                     <h2>
                         No results found
