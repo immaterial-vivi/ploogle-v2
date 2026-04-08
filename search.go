@@ -47,6 +47,7 @@ type SearchHit struct {
 	Blacklist_Reason     string
 	Blacklist_Created_at time.Time
 	Direct_Title_Match   bool
+	Complete_Title_Match bool
 }
 
 type Query struct {
@@ -66,7 +67,7 @@ func ImFeelingPlucky(query string, dbpool *pgxpool.Pool) (SearchHit, error) {
 	return hit, nil
 }
 
-func mergeHits(results []SearchHit, additionalHits []SearchHit) ([]SearchHit, int) {
+func mergeHits(results []SearchHit, additionalHits []SearchHit, acc int) ([]SearchHit, int) {
 	removed := 0
 	additionalHits = slices.DeleteFunc(additionalHits, func(e SearchHit) bool {
 		for _, hit := range results {
@@ -77,7 +78,18 @@ func mergeHits(results []SearchHit, additionalHits []SearchHit) ([]SearchHit, in
 		}
 		return false
 	})
-	return append(results, additionalHits...), removed
+
+	resultsLen := 0
+	if len(results) > 0 && acc == 0 {
+		resultsLen = results[0].Total_Count
+	}
+
+	additionalHitsLen := 0
+	if len(additionalHits) > 0 {
+		additionalHitsLen = additionalHits[0].Total_Count
+	}
+
+	return append(results, additionalHits...), resultsLen + additionalHitsLen - removed
 }
 
 func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
@@ -88,6 +100,10 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	var queryPerformance QueryPerformance
 	queryPerformance.StartTime = time.Now().UnixNano()
+
+	var countExactTitleHits, countTitleHits, totalHits int
+	limit := query.limit
+	offset := query.offset
 
 	// match exact titles
 	rows, err := dbpool.Query(context.Background(),
@@ -104,15 +120,20 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 			   reason is not NULL    as blacklisted,
 			   coalesce(reason, '')  as blacklist_reason,
 			   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
-			   true as direct_title_match
+			   true as direct_title_match,
+				true as complete_title_match
     from books
         left join blacklist on books.id = blacklist.book_id
     where title ilike $1
      limit $2
     offset $3`,
-		query.query, query.limit, query.offset)
+		query.query, limit, offset)
 
 	exactTitleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+	result.Hits, countExactTitleHits = mergeHits(result.Hits, exactTitleHits, 0)
+
+	limit = max(0, limit-len(result.Hits))
+	offset = max(0, offset-len(result.Hits))
 
 	// match partial titles
 	rows, err = dbpool.Query(context.Background(),
@@ -129,15 +150,21 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 			   reason is not NULL    as blacklisted,
 			   coalesce(reason, '')  as blacklist_reason,
 			   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
-			   true as direct_title_match
+			   true as direct_title_match,
+				false as complete_title_match
+
     from books
         left join blacklist on books.id = blacklist.book_id
     where title ilike '%' || $1 || '%' 
      limit $2
     offset $3`,
-		query.query, query.limit, query.offset)
+		query.query, limit, offset)
 
 	titleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+	result.Hits, countTitleHits = mergeHits(result.Hits, titleHits, countExactTitleHits)
+
+	limit = max(0, limit-len(result.Hits))
+	offset = max(0, offset-len(result.Hits))
 
 	rows, err = dbpool.Query(
 		context.Background(),
@@ -157,7 +184,9 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 				   reason is not NULL    as blacklisted,
 				   coalesce(reason, '')  as blacklist_reason,
 				   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
-				   false as direct_title_match
+				   false as direct_title_match,
+				false as complete_title_match
+
 			-- select chapter_ranks.book_id, title, chapter, rank
 			from (select distinct on (book_id) book_id,
 											   chapter_title,
@@ -176,7 +205,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 					 join books on chapter_ranks.book_id = books.id
 					 left join blacklist on chapter_ranks.book_id = blacklist.book_id
 			where blacklist.shadow is not true order by rank desc limit $2 offset $3`,
-		query.query, query.limit, query.offset)
+		query.query, limit, offset)
 
 	if err != nil {
 		log.Println("error getting rows from database:", err)
@@ -188,9 +217,42 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 		return nil, err
 	}
 
-	result.Hits, _ = mergeHits(result.Hits, exactTitleHits)
-	result.Hits, _ = mergeHits(result.Hits, titleHits)
-	result.Hits, _ = mergeHits(result.Hits, semanticHits)
+	result.Hits, totalHits = mergeHits(result.Hits, semanticHits, countTitleHits)
+
+	if limit == 0 {
+
+		row := dbpool.QueryRow(
+			context.Background(),
+			`select
+				   count(*) over () ::integer
+			from (select distinct on (book_id) book_id,
+											   chapter_title,
+											   chapter_text,
+											   url,
+											   chapter,
+											   ts_rank_cd('{0.014925373, 0.2, 0.4, 1.0}', textsearchable_index_col, query) as rank,
+											   query
+	
+				  from (select *,
+							   chapters.url as chapter_url
+						from chapters,
+							 websearch_to_tsquery($1) as query
+						where textsearchable_index_col @@ query)
+				 ) as chapter_ranks
+					 join books on chapter_ranks.book_id = books.id
+					 left join blacklist on chapter_ranks.book_id = blacklist.book_id
+			where blacklist.shadow is not true order by rank desc limit 1`,
+			query.query)
+
+		var count int
+		err := row.Scan(&count)
+
+		if err != nil {
+			log.Println("error getting rows from database:", err)
+			return nil, err
+		}
+		totalHits = count + countTitleHits
+	}
 
 	queryPerformance.EndTime = time.Now().UnixNano()
 	queryPerformance.DeltaTime = queryPerformance.EndTime - queryPerformance.StartTime
@@ -201,9 +263,10 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	result.Performance = queryPerformance
 	result.TsQuery = tsquery
 	result.Query = query.query
-
+	result.Page.Results = totalHits
+	log.Println(totalHits, countExactTitleHits, countTitleHits)
 	log.Println("searched:", query.query)
-	log.Println("num found:", len(result.Hits))
+	log.Println("num found:", totalHits)
 
 	return &result, nil
 

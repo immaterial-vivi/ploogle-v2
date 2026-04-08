@@ -100,10 +100,10 @@ func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 		// send it to db
 		result, err := Search(query, dbpool)
 
-		// insert
-		if len(result.Hits) > 0 {
-			result.Page.Results = result.Hits[0].Total_Count
-		}
+		//// insert
+		//if len(result.Hits) > 0 {
+		//	result.Page.Results = result.Hits[0].Total_Count
+		//}
 
 		result.Page.Page = pageNr
 		result.Page.Pages = int(math.Ceil(float64(result.Page.Results) / float64(pageSize)))

@@ -26,7 +26,7 @@
     }
 
 </script>
-    <section class="card {result.Blacklisted ? 'blacklisted': ''} {result.Direct_Title_Match ? "direct-match" :""}">
+    <section class="card {result.Blacklisted ? 'blacklisted': ''} {result.Complete_Title_Match ? "direct-match" :""}">
         <span class="sr-only">⮦</span>
         <a aria-hidden="true" class="result-header" href={chapterUrl()} target="_blank"
            rel="noopener noreferrer">
