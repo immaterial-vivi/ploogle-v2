@@ -55,7 +55,11 @@
                     </h2>
 
                     <span>
-                        maybe you should write something about <em>{data.message.Query}</em> :3
+                        {#if data.message.Query && data.message.Query.size > 3}
+                            maybe you should write something about <em>{data.message.Query}</em> :3
+                        {:else}
+                            Please try a more specific query then just <em>{data.message.Query}</em>
+                        {/if}
                     </span>
                 </section>
             {/if}

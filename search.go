@@ -93,9 +93,6 @@ func mergeHits(results []SearchHit, additionalHits []SearchHit, acc int) ([]Sear
 }
 
 func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
-
-	log.Println("searching", query.query)
-
 	var result QueryResult
 
 	var queryPerformance QueryPerformance
@@ -105,9 +102,10 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	limit := query.limit
 	offset := query.offset
 
-	// match exact titles
-	rows, err := dbpool.Query(context.Background(),
-		`select 
+	if len(query.query) > 3 {
+		// match exact titles
+		rows, err := dbpool.Query(context.Background(),
+			`select 
     			url as book_url,
     			'' as chapter_url,
     			title as title,
@@ -127,46 +125,52 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
     where title ilike $1
      limit $2
     offset $3`,
-		query.query, limit, offset)
+			query.query, limit, offset)
 
-	exactTitleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
-	result.Hits, countExactTitleHits = mergeHits(result.Hits, exactTitleHits, 0)
+		exactTitleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+		result.Hits, countExactTitleHits = mergeHits(result.Hits, exactTitleHits, 0)
 
-	limit = max(0, limit-len(result.Hits))
-	offset = max(0, offset-len(result.Hits))
+		limit = max(0, limit-len(result.Hits))
+		offset = max(0, offset-countExactTitleHits)
 
-	// match partial titles
-	rows, err = dbpool.Query(context.Background(),
-		`select 
-    			url as book_url,
-    			'' as chapter_url,
-    			title as title,
-    			0 as chapter,
-    			author as author,
-    			summary as summary,
-    			'' as excerpt,
-    			100 as rank,
-			   count(*) over () as total_count,
-			   reason is not NULL    as blacklisted,
-			   coalesce(reason, '')  as blacklist_reason,
-			   coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
-			   true as direct_title_match,
-				false as complete_title_match
+		// match partial titles
+		rows, err = dbpool.Query(context.Background(),
+			`
+					select
+						url as book_url,
+						'' as chapter_url,
+						title as title,
+						0 as chapter,
+						author as author,
+						summary as summary,
+						'' as excerpt,
+						100 - levenshtein(title, $1) as rank,
+						count(*) over () as total_count,
+						reason is not NULL    as blacklisted,
+						coalesce(reason, '')  as blacklist_reason,
+						coalesce(blacklist.created_at, to_timestamp(0))  as blacklist_created_at,
+						true as direct_title_match,
+						false as complete_title_match
+					
+					from books
+							 left join blacklist on books.id = blacklist.book_id
+					where title ilike '%' || $1 || '%' order by rank desc 
+					limit $2
+						offset $3;`,
+			query.query, limit, offset)
 
-    from books
-        left join blacklist on books.id = blacklist.book_id
-    where title ilike '%' || $1 || '%' 
-     limit $2
-    offset $3`,
-		query.query, limit, offset)
+		titleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
+		result.Hits, countTitleHits = mergeHits(result.Hits, titleHits, countExactTitleHits)
 
-	titleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
-	result.Hits, countTitleHits = mergeHits(result.Hits, titleHits, countExactTitleHits)
+		limit = max(0, limit-len(result.Hits))
+		offset = max(0, offset-countTitleHits)
+		if err != nil {
+			log.Println("error getting rows from database:", err)
+			return nil, err
+		}
+	}
 
-	limit = max(0, limit-len(result.Hits))
-	offset = max(0, offset-len(result.Hits))
-
-	rows, err = dbpool.Query(
+	rows, err := dbpool.Query(
 		context.Background(),
 		`select books.url            as book_url,
 				   chapter_ranks.url     as chapter_url,
@@ -219,7 +223,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	result.Hits, totalHits = mergeHits(result.Hits, semanticHits, countTitleHits)
 
-	if limit == 0 {
+	if limit == 0 && len(semanticHits) == 0 {
 
 		row := dbpool.QueryRow(
 			context.Background(),
@@ -247,11 +251,9 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 		var count int
 		err := row.Scan(&count)
 
-		if err != nil {
-			log.Println("error getting rows from database:", err)
-			return nil, err
+		if err == nil {
+			totalHits = count + countTitleHits
 		}
-		totalHits = count + countTitleHits
 	}
 
 	queryPerformance.EndTime = time.Now().UnixNano()
@@ -264,9 +266,10 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	result.TsQuery = tsquery
 	result.Query = query.query
 	result.Page.Results = totalHits
-	log.Println(totalHits, countExactTitleHits, countTitleHits)
-	log.Println("searched:", query.query)
-	log.Println("num found:", totalHits)
+	log.Println("found", countExactTitleHits,
+		"with exact matching titles,", countTitleHits,
+		"including matching titles, and", totalHits,
+		"including fulltext search for", query.query)
 
 	return &result, nil
 

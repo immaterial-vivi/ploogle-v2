@@ -71,8 +71,6 @@ func getSearchRequest(dbpool *pgxpool.Pool, pageSize int) http.HandlerFunc {
 
 		values := r.URL.Query()
 
-		log.Print(values)
-
 		var qString string
 
 		if values.Has("q") {

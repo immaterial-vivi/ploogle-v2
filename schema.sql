@@ -1,3 +1,5 @@
+CREATE EXTENSION if not exists fuzzystrmatch;
+
 create sequence if not exists crawlerror_id_seq ;
 
 alter sequence crawlerror_id_seq owner to ploogle;
