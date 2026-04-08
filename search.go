@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -92,6 +93,16 @@ func mergeHits(results []SearchHit, additionalHits []SearchHit, acc int) ([]Sear
 	return append(results, additionalHits...), resultsLen + additionalHitsLen - removed
 }
 
+func normalizeQuery(query string) string {
+	query = strings.ToLower(query)
+	query = strings.TrimSpace(query)
+	return strings.Join(strings.Fields(query), " ")
+}
+
+func isSemanticQuery(query string) bool {
+	return strings.Contains(query, "\"") || strings.Contains(query, " -") || strings.Contains(query, " OR ")
+}
+
 func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	var result QueryResult
 
@@ -102,7 +113,13 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	limit := query.limit
 	offset := query.offset
 
-	if len(query.query) > 3 {
+	normalizedQuery := normalizeQuery(query.query)
+
+	log.Println("normalized query:", normalizedQuery)
+
+	log.Println("is semantic query?", isSemanticQuery(query.query))
+
+	if len(query.query) > 3 && !isSemanticQuery(query.query) {
 		// match exact titles
 		rows, err := dbpool.Query(context.Background(),
 			`select 
@@ -125,7 +142,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
     where title ilike $1
      limit $2
     offset $3`,
-			query.query, limit, offset)
+			normalizedQuery, limit, offset)
 
 		exactTitleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
 		result.Hits, countExactTitleHits = mergeHits(result.Hits, exactTitleHits, 0)
@@ -157,7 +174,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 					where title ilike '%' || $1 || '%' order by rank desc 
 					limit $2
 						offset $3;`,
-			query.query, limit, offset)
+			normalizedQuery, limit, offset)
 
 		titleHits, err := pgx.CollectRows(rows, pgx.RowToStructByPos[SearchHit])
 		result.Hits, countTitleHits = mergeHits(result.Hits, titleHits, countExactTitleHits)
@@ -209,7 +226,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 					 join books on chapter_ranks.book_id = books.id
 					 left join blacklist on chapter_ranks.book_id = blacklist.book_id
 			where blacklist.shadow is not true order by rank desc limit $2 offset $3`,
-		query.query, limit, offset)
+		normalizedQuery, limit, offset)
 
 	if err != nil {
 		log.Println("error getting rows from database:", err)
@@ -264,7 +281,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 
 	result.Performance = queryPerformance
 	result.TsQuery = tsquery
-	result.Query = query.query
+	result.Query = normalizedQuery
 	result.Page.Results = max(totalHits, countTitleHits)
 	log.Println("found", countExactTitleHits,
 		"with exact matching titles,", countTitleHits,
