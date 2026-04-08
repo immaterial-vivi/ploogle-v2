@@ -265,7 +265,7 @@ func Search(query Query, dbpool *pgxpool.Pool) (*QueryResult, error) {
 	result.Performance = queryPerformance
 	result.TsQuery = tsquery
 	result.Query = query.query
-	result.Page.Results = totalHits
+	result.Page.Results = max(totalHits, countTitleHits)
 	log.Println("found", countExactTitleHits,
 		"with exact matching titles,", countTitleHits,
 		"including matching titles, and", totalHits,
