@@ -69,6 +69,20 @@
             <li>
                 <details>
                     <summary>
+                        How are results ranked?
+                    </summary>
+                    <p>
+                        If the search term matches a title, that story automatically ranks highest.
+                        Stories with titles containing the search term are ranked under that.
+                        Finally, and most importantly, a full text search is run against all indexed stories and the result is ordered by relevancy.
+                        Search rank is not influenced by Ao3 statistics like hits, kudos, or similar, nor are stories considered particularly influential boosted in the algorithm.
+                        If you're looking for reading recommendations, <a href="https://humandomestication.guide/blog/reading-homework/" rel="nofollow noopener">Ms. Teagan has a rather substantial list!</a>
+                    </p>
+                </details>
+            </li>
+            <li>
+                <details>
+                    <summary>
                         Are stories excluded from the search results?
                     </summary>
                     <p>
