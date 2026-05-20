@@ -76,11 +76,51 @@ func saveCrawlFailed(url string, dbpool *pgxpool.Pool) error {
 	return err
 }
 
-func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
+func updateCrawlStateFailed(ao3Id string, exitCode int, skipOnSubsequentUpdates bool, dbpool *pgxpool.Pool) error {
+
+	var bookId int
+	err := dbpool.QueryRow(context.Background(), "select book_id from book_crawl_state where url like $1", ao3Id).Scan(&bookId)
+
+	if err != nil {
+		return err
+	}
+
+	if bookId == 0 {
+		_, err := dbpool.Exec(context.Background(),
+			`insert into book_crawl_state(book_id, ao3_id, last_crawl, last_exit_code, file_update_success, skip_on_subsequent_updates)
+			 values ($1, $2, $3, $4, $5, $6)
+			 on conflict (ao3_id) do update set last_crawl=$3, last_exit_code=$4, file_update_success=$5, skip_on_subsequent_updates=$6`,
+			bookId, ao3Id, time.Now(), exitCode, true, skipOnSubsequentUpdates)
+		return err
+	} else {
+		_, err := dbpool.Exec(context.Background(),
+			`insert into book_crawl_state( ao3_id, last_crawl, last_exit_code, file_update_success, skip_on_subsequent_updates)
+			 values ($1, $2, $3, $4, $5)
+			 on conflict (ao3_id) do update set last_crawl=$2, last_exit_code=$3, file_update_success=$4, skip_on_subsequent_updates=$5`,
+			ao3Id, time.Now(), exitCode, true, skipOnSubsequentUpdates)
+		return err
+	}
+
+}
+
+func updateCrawlStateSuccess(bookId int, ao3Id string, exitCode int, fileUpdateSuccess bool, skipOnSubsequentUpdates bool, dbpool *pgxpool.Pool) error {
+
+	_, err := dbpool.Exec(context.Background(),
+		`insert into book_crawl_state(book_id, ao3_id, last_crawl, last_exit_code, file_update_success, skip_on_subsequent_updates)
+		 values ($1, $2, $3, $4, $5, $6)
+		 on conflict (ao3_id) do update set last_crawl=$3, last_exit_code=$4, file_update_success=$5, skip_on_subsequent_updates=$6`,
+		bookId, ao3Id, time.Now(), exitCode, fileUpdateSuccess, skipOnSubsequentUpdates)
+
+	log.Println(err)
+
+	return err
+}
+
+func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) (int, error) {
 	book, err := epub.ReadBook(path)
 	if err != nil {
 		log.Println("could not read book at", path, err)
-		return err
+		return -1, err
 	}
 
 	title, err := book.Title()
@@ -97,7 +137,7 @@ func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
 	}
 
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	var ebookData EBookData
@@ -118,8 +158,8 @@ func insertOrUpdateBook(path string, dbpool *pgxpool.Pool) error {
 		log.Println(err)
 	}
 	// log.Println(ebookData)
-	upsertBook(ebookData, dbpool)
-	return err
+	id, err := upsertBook(ebookData, dbpool)
+	return id, err
 
 }
 
@@ -155,7 +195,7 @@ func GetRandomBookUrl(dbpool *pgxpool.Pool) (string, error) {
 
 // we only ever update a whole book at once because we fetch entire ebooks through fanficfare
 // this is overfetching, but ao3 doesn't have an api and the alternative is web scraping. This feels more stable
-func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {
+func upsertBook(book EBookData, dbpool *pgxpool.Pool) (int, error) {
 
 	_, err := dbpool.Exec(context.Background(),
 		"insert into books(title, author, url, summary, published_at, updated_at, packaged_at) values ($1, $2, $3, $4, $5, $6, $7) on conflict (url) do update set title=$1, author=$2, summary=$4, updated_at=$6, packaged_at=$7",
@@ -163,6 +203,8 @@ func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {
 
 	if err != nil {
 		log.Println(err)
+		return -1, err
+
 	}
 
 	var bookId int
@@ -170,6 +212,7 @@ func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {
 
 	if err != nil {
 		log.Println(err)
+		return -1, err
 	}
 
 	for index, chapter := range book.Chapters {
@@ -186,10 +229,12 @@ func upsertBook(book EBookData, dbpool *pgxpool.Pool) error {
 
 		if err != nil {
 			log.Println(err)
+			return -1, err
+
 		}
 	}
 
-	return err
+	return bookId, err
 }
 
 func blacklistBook(bookId int, reason string, dbpool *pgxpool.Pool) error {

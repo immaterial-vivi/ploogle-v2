@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({url}) => {
     if (!q) {
         error(400, "A search query is required to search")
     }
-
+    
     console.log(PLOOGLE_AUTHORIZATION_HEADER)
     const headers ={
         "Accept": "application/json",

@@ -33,6 +33,7 @@ func main() {
 	shouldMigrateDbPtr := flag.Bool("m", false, "migrate the db schema")
 	shouldLoadDbPtr := flag.Bool("l", false, "load books from bookdir into the db")
 	shouldRecrawlPtr := flag.Bool("c", false, "crawl ao3")
+	shouldRebuildIndexPtr := flag.Bool("i", false, "scan books dir and rebuild database")
 
 	queryPtr := flag.String("q", "", "search for this")
 	pagePtr := flag.Int("p", 0, "page")
@@ -54,7 +55,7 @@ func main() {
 	databasePort := os.Getenv("POSTGRES_PORT")
 	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", databaseUser, databasePassword, databaseHost, databasePort, databaseDBPath)
 
-	log.Println(databaseUrl)
+	bookStorePath := os.Getenv("BOOKS_DIR")
 
 	dbconfig, err := pgxpool.ParseConfig(databaseUrl)
 
@@ -85,19 +86,20 @@ func main() {
 		fillDB(dbpool)
 	}
 
+	if *shouldRebuildIndexPtr {
+		CreateInitialState(bookStorePath, dbpool)
+		os.Exit(0)
+	}
+
 	// crawl web site
 	if *shouldRecrawlPtr {
 		fetchBooks(dbpool)
 	}
 
 	if *bookPathPtr != "" {
-		pwd, err := os.Getwd()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(pwd)
-		insertOrUpdateBook(*bookPathPtr, dbpool)
+
+		GetBookLastUpdatedOnAo3(*bookPathPtr)
+		os.Exit(0)
 	}
 
 	if *queryPtr != "" {

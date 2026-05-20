@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -57,8 +59,10 @@ func fetchBook(url string) (string, error) {
 
 	cmd := exec.Command(fanficfare, "-p", "-d", "--non-interactive", "--force", fullUrl)
 
-	cmd.Dir = "../test books"
+	cmd.Dir = os.Getenv("BOOKS_DIR")
 	out, err := cmd.CombinedOutput()
+
+	log.Println("fetch", string(out))
 
 	if err != nil {
 		log.Println(err)
@@ -68,7 +72,7 @@ func fetchBook(url string) (string, error) {
 	cmdOutput := string(out)
 
 	fetchedPdfFilepath, err := findEpubDest(cmdOutput)
-
+	log.Println("fetch")
 	if err != nil {
 		return "", err
 	}
@@ -80,16 +84,38 @@ func fetchBook(url string) (string, error) {
 	return cmd.Dir + "/" + fetchedPdfFilepath, nil
 }
 
-// could be inlined?
-func updateBook(url string, dbpool *pgxpool.Pool) error {
-	epubFilePath, err := fetchBook(url)
-	log.Println("update book>", epubFilePath)
-	if err != nil || epubFilePath == "" {
-		saveCrawlFailed(url, dbpool)
-		return err
+func ao3IdFromUrl(url string) string {
+
+	re, _ := regexp.Compile(`works\/(\d+)`)
+
+	match := re.FindStringSubmatch(url)
+
+	if len(match) > 1 {
+
+		log.Println(url, match[1])
+		return match[1]
 
 	}
-	return insertOrUpdateBook(epubFilePath, dbpool)
+	return ""
+}
+
+// could be inlined?
+func updateBook(url string, dbpool *pgxpool.Pool) error {
+	epubFilePath, fetchErr := fetchBook(url)
+	log.Println("update book>", epubFilePath)
+	if fetchErr != nil || epubFilePath == "" {
+		saveCrawlFailed(url, dbpool)
+		updateCrawlStateFailed(ao3IdFromUrl(url), -1, false, dbpool)
+
+		return fetchErr
+
+	}
+	id, err := insertOrUpdateBook(epubFilePath, dbpool)
+	// save update result
+
+	updateCrawlStateSuccess(id, ao3IdFromUrl(url), 0, true, false, dbpool)
+
+	return err
 
 }
 
@@ -121,6 +147,34 @@ func parsePage(reader io.ReadCloser) ([]BookMeta, error) {
 	})
 
 	return links, err
+
+}
+
+func GetBookLastUpdatedOnAo3(ao3id string) (time.Time, error) {
+
+	archiveUrl := fmt.Sprintf("https://archiveofourown.org/works/%s", ao3id)
+
+	res, err := http.Get(archiveUrl)
+
+	if res.StatusCode >= 300 {
+		log.Println("HTTP error:", res.StatusCode, res.Status)
+		return time.Now(), errors.New(res.Status)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+
+	text := doc.Find("dl > .status").Text()
+
+	if text == "" {
+		text = doc.Find("dl > .published").Text()
+	}
+
+	log.Println("date:", text)
+
+	ao3DateLayout := "02 Jan 2006"
+	date, err := time.Parse(ao3DateLayout, text)
+
+	return date, err
 
 }
 
@@ -246,4 +300,36 @@ func cleanFailedCrawls(dbpool *pgxpool.Pool) {
 		)
 	}
 
+}
+
+func CreateInitialState(bookStorePath string, dbpool *pgxpool.Pool) error {
+
+	log.Println("creating initial crawl state table...")
+
+	// figure out which books are already present in the file system and update them to the latest available version from ao3
+	// books that return an error 400 should be automatically blacklisted
+	// books that return a status 200 but are blacklisted should be unblacklisted if the reason for blacklisting was a 400 error
+	files, err := os.ReadDir(bookStorePath)
+
+	if err != nil {
+		log.Fatalln("Failed to open books directory!", bookStorePath)
+	}
+
+	// this will only match ao3 ids. As the ROM set doesn't change anymore, this is not an issue
+	re, err := regexp.Compile(`-ao3_(\d*)\.epub`)
+
+	for _, file := range files {
+
+		match := re.FindStringSubmatch(file.Name())
+
+		if len(match) > 1 {
+
+			log.Println(file.Name(), match[1])
+		} else {
+			log.Println(file.Name(), "NO MATCH!")
+
+		}
+	}
+
+	return nil
 }
